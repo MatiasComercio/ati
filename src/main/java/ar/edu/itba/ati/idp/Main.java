@@ -1,36 +1,16 @@
 package ar.edu.itba.ati.idp;
 
-import static javafx.geometry.Pos.CENTER;
-import static javafx.scene.layout.BorderStrokeStyle.DASHED;
-import static javafx.scene.paint.Color.LIGHTGRAY;
-
+import ar.edu.itba.ati.idp.ui.DropPane;
 import ar.edu.itba.ati.idp.ui.MainMenuBar;
 import java.io.File;
-import java.util.List;
 import javafx.application.Application;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +19,7 @@ public class Main extends Application {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-  private static final String APPLICATION_NAME = "Imageditor";
+  private static final String APPLICATION_NAME = "imgEditor";
 
   private Stage mainStage;
   private MenuBar mainMenuBar;
@@ -51,14 +31,26 @@ public class Main extends Application {
   }
 
   @Override
-  public void start(final Stage primaryStage) {
-    this.mainStage = primaryStage;
-    this.mainMenuBar = buildMenuBar(primaryStage);
+  public void start(final Stage mainStage) {
+    this.mainStage = mainStage;
+    this.mainMenuBar = buildMenuBar(mainStage);
     this.noImagePane = buildNoImagePane();
     this.mainPane = new BorderPane();
 
     this.mainPane.setTop(this.mainMenuBar);
-    this.mainPane.setCenter(this.noImagePane);
+    this.setNoImagePane();
+    // TODO:
+//    mainPane.centerProperty().addListener((observable, oldValue, newValue) -> {
+//      final Region region = (Region) newValue;
+//
+//      if (region.getMinWidth() > 0) {
+//        mainStage.setMinWidth(region.getMinWidth());
+//      }
+//
+//      if (region.getMinHeight() > 0) {
+//        mainStage.setMinHeight(region.getMinHeight() + 22);
+//      }
+//    });
 
     this.mainStage.setTitle(APPLICATION_NAME);
     this.mainStage.setOnCloseRequest(event -> System.exit(0));
@@ -73,9 +65,6 @@ public class Main extends Application {
     final ImageView imageView = new ImageView(image);
     final ScrollPane scrollPane = new ScrollPane(imageView);
     mainPane.setCenter(scrollPane);
-
-    final StringProperty imageFileNameProperty = new SimpleStringProperty();
-    final BooleanProperty imageModifiedProperty = new SimpleBooleanProperty(false);
   }
 
   private void handleSaveAsFile(final File file) {
@@ -87,7 +76,7 @@ public class Main extends Application {
   }
 
   private void handleCloseFile() {
-    mainPane.setCenter(noImagePane);
+    setNoImagePane();
   }
 
   private MenuBar buildMenuBar(final Stage primaryStage) {
@@ -101,35 +90,18 @@ public class Main extends Application {
   }
 
   private Pane buildNoImagePane() {
-    final Text dragImageText = new Text("Drag and drop a supported image");
-    dragImageText.setTextAlignment(TextAlignment.CENTER);
-    final StackPane dragAndDropPane = new StackPane(dragImageText);
-    dragAndDropPane.setPadding(new Insets(15, 15, 15, 15));
-    dragAndDropPane.setBorder(
-        new Border(new BorderStroke(LIGHTGRAY, DASHED, new CornerRadii(3), new BorderWidths(3))));
-    dragAndDropPane.setAlignment(CENTER);
-    dragAndDropPane.setOnDragOver(event -> {
-      final Dragboard dragboard = event.getDragboard();
-      if (dragboard.hasFiles()) {
-        event.acceptTransferModes(TransferMode.ANY);
-        dragAndDropPane.setBackground(
-            new Background(
-                new BackgroundFill(LIGHTGRAY, new CornerRadii(3), new Insets(6, 6, 6, 6))));
-      }
-    });
-    dragAndDropPane.setOnDragDropped(event -> {
-      final Dragboard dragboard = event.getDragboard();
-      if (dragboard.hasFiles()) {
-        final List<File> files = dragboard.getFiles();
-        this.handleOpenFile(files.get(0));
-      }
-    });
-    dragAndDropPane.setOnDragExited(event -> dragAndDropPane.setBackground(Background.EMPTY));
+    // TODO: Change to a better & local image
+    final Image image = new Image(
+        "https://cdn3.iconfinder.com/data/icons/faticons/32/picture-01-256.png", 50, 50, true,
+        true);
 
-    final StackPane borderPane = new StackPane(dragAndDropPane);
-    borderPane.setPadding(new Insets(10, 10, 10, 10));
-    borderPane.setPrefSize(300, 200);
+    final DropPane dropPane = new DropPane(mainStage, image, "Drag image here…", "Open image");
+    dropPane.setOnOpenAction(this::handleOpenFile);
 
-    return borderPane;
+    return dropPane;
+  }
+
+  private void setNoImagePane() {
+    mainPane.setCenter(noImagePane);
   }
 }

@@ -13,6 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
+// TODO: Habilitar y deshabilitar items del menu dependiendo de si hay o no una imagen abierta
 public class MainMenuBar extends MenuBar {
 
   // TODO: Sacar de otro lado
@@ -21,14 +22,13 @@ public class MainMenuBar extends MenuBar {
       .map((ext) -> new ExtensionFilter(ext.toUpperCase(), "*." + ext))
       .collect(Collectors.toList());
 
-  // FIXME: This is ugly, very very ugly
   static {
     extensionFilters
         .add(0, new ExtensionFilter("All supported", supportedExtensions.stream()
             .map(ext -> "*." + ext).collect(Collectors.toList())));
   }
 
-  private final Stage primaryStage;
+  private final Stage mainStage;
 
   private final Menu menuFile = new Menu("File");
   private final MenuItem itemOpen = new MenuItem("Open...");
@@ -38,30 +38,25 @@ public class MainMenuBar extends MenuBar {
 
   private final Menu menuEdit = new Menu("Edit");
 
+  // TODO: Ver si hace falta tener 2 o con 1 alcanza. Uno para toda la app o solo para el menu?
   private final FileChooser openFileChooser = buildOpenFileChooser();
   private final FileChooser saveFileChooser = buildSaveAsFileChooser();
 
-  public MainMenuBar(final Stage primaryStage) {
+  public MainMenuBar(final Stage mainStage) {
     super();
-    this.primaryStage = primaryStage;
+    this.mainStage = mainStage;
     this.setUseSystemMenuBar(true); // TODO: Test en windows
     this.menuFile.getItems()
         .addAll(itemOpen, new SeparatorMenuItem(), itemSave, itemSaveAs, new SeparatorMenuItem(),
             itemClose);
     this.getMenus().addAll(menuFile, menuEdit);
-    this.itemSave.setDisable(true);
-    this.itemSaveAs.setDisable(true);
-    this.itemClose.setDisable(true);
   }
 
   public void setOnOpenAction(final Consumer<File> openHandler) {
     itemOpen.setOnAction(event -> {
-      final File file = openFileChooser.showOpenDialog(primaryStage);
+      final File file = openFileChooser.showOpenDialog(mainStage);
       if (file != null) {
         openHandler.accept(file);
-        itemSave.setDisable(false);
-        itemSaveAs.setDisable(false);
-        itemClose.setDisable(false);
       }
     });
   }
@@ -72,7 +67,7 @@ public class MainMenuBar extends MenuBar {
 
   public void setOnSaveAsAction(final Consumer<File> saveHandler) {
     itemSaveAs.setOnAction(event -> {
-      final File file = saveFileChooser.showSaveDialog(primaryStage);
+      final File file = saveFileChooser.showSaveDialog(mainStage);
       if (file != null) {
         saveHandler.accept(file);
       }
@@ -80,12 +75,7 @@ public class MainMenuBar extends MenuBar {
   }
 
   public void setOnCloseAction(final Runnable handler) {
-    itemClose.setOnAction(event -> {
-      handler.run();
-      itemSave.setDisable(true);
-      itemSaveAs.setDisable(true);
-      itemClose.setDisable(true);
-    });
+    itemClose.setOnAction(event -> handler.run());
   }
 
   private static FileChooser buildSaveAsFileChooser() {
