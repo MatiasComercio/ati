@@ -37,6 +37,23 @@ public class MainMenuBar extends MenuBar {
   private final MenuItem itemClose = new MenuItem("Close");
 
   private final Menu menuEdit = new Menu("Edit");
+  private final MenuItem itemEditNoise = new MenuItem("Noise...");
+  private final Menu itemMenuEditWithImage = new Menu("With Image");
+  private final MenuItem itemEditWithImageAdd = new MenuItem("Add...");
+  private final MenuItem itemEditWithImageSubtract = new MenuItem("Subtract...");
+  private final MenuItem itemEditWithImageMultiply = new MenuItem("Multiply...");
+  private final MenuItem itemEditDinamicRange = new MenuItem("Dinamic Range...");
+  private final MenuItem itemEditContrast = new MenuItem("Contrast...");
+  private final MenuItem itemEditGamma = new MenuItem("Gamma..."); // TODO: Gamma o Gamma Correction
+  private final MenuItem itemEditThreshold = new MenuItem("Threshold...");
+  private final MenuItem itemEditApplyNegative = new MenuItem("Apply Negative");
+
+  private final Menu menuView = new Menu("View");
+  private final MenuItem itemViewOriginalImage = new MenuItem("Original Image");
+  private final MenuItem itemViewHistogram = new MenuItem("Histogram");
+
+  private final Menu menuHelp = new Menu("Help");
+  private final MenuItem itemAbout = new MenuItem("About...");
 
   // TODO: Ver si hace falta tener 2 o con 1 alcanza. Uno para toda la app o solo para el menu?
   private final FileChooser openFileChooser = buildOpenFileChooser();
@@ -49,7 +66,14 @@ public class MainMenuBar extends MenuBar {
     this.menuFile.getItems()
         .addAll(itemOpen, new SeparatorMenuItem(), itemSave, itemSaveAs, new SeparatorMenuItem(),
             itemClose);
-    this.getMenus().addAll(menuFile, menuEdit);
+    this.itemMenuEditWithImage.getItems()
+        .addAll(itemEditWithImageAdd, itemEditWithImageSubtract, itemEditWithImageMultiply);
+    this.menuEdit.getItems()
+        .addAll(itemEditNoise, itemMenuEditWithImage, itemEditDinamicRange, itemEditContrast,
+            itemEditGamma, itemEditThreshold, itemEditApplyNegative);
+    this.menuView.getItems().addAll(itemViewOriginalImage, itemViewHistogram);
+    this.menuHelp.getItems().addAll(itemAbout);
+    this.getMenus().addAll(menuFile, menuEdit, menuView, menuHelp);
   }
 
   public void setOnOpenAction(final Consumer<File> openHandler) {
