@@ -53,10 +53,6 @@ public class DropPane extends BorderPane {
     this.content.setBorder(
         new Border(new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(3),
             new BorderWidths(3))));
-    // TODO: Remove
-//    this.content.setBackground(new Background(
-//        new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-//            BackgroundPosition.CENTER, new BackgroundSize(50, 50, false, false, false, false))));
     this.content.setAlignment(Pos.CENTER);
     this.content.setSpacing(15);
     this.content.getChildren().addAll(this.imageView, this.text, this.openButton);

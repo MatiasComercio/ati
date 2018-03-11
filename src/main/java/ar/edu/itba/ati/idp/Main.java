@@ -54,18 +54,7 @@ public class Main extends Application {
 
     this.mainPane.setTop(this.mainMenuBar);
     this.setNoImagePane();
-    // TODO:
-//    mainPane.centerProperty().addListener((observable, oldValue, newValue) -> {
-//      final Region region = (Region) newValue;
-//
-//      if (region.getMinWidth() > 0) {
-//        mainStage.setMinWidth(region.getMinWidth());
-//      }
-//
-//      if (region.getMinHeight() > 0) {
-//        mainStage.setMinHeight(region.getMinHeight() + 22);
-//      }
-//    });
+    // TODO: Restrict UI min size to window components
 
     this.mainStage.setTitle(APPLICATION_NAME);
     this.mainStage.setOnCloseRequest(event -> System.exit(0));
@@ -128,9 +117,7 @@ public class Main extends Application {
   }
 
   private Pane buildNoImagePane() {
-    // TODO: Change to a better & local image
-    final Image image = new Image(
-        "https://cdn3.iconfinder.com/data/icons/faticons/32/picture-01-256.png");
+    final Image image = new Image("file:src/main/resources/ui/icons/image_icon.png");
 
     final DropPane dropPane = new DropPane(mainStage, image, "Drag image here…", "Open image");
     dropPane.setOnOpenAction(this::handleOpenFile);
