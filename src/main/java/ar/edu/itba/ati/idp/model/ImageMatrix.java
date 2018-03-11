@@ -22,15 +22,11 @@ public class ImageMatrix {
   private final int height;
   private final Type type;
 
-  private final BufferedImage originalBufferedImage;
-
-  private ImageMatrix(final double[][][] pixels, final Type type,
-      final BufferedImage originalBufferedImage) {
+  private ImageMatrix(final double[][][] pixels, final Type type) {
     this.pixels = pixels;
     this.width = pixels[0].length;
     this.height = pixels.length;
     this.type = type;
-    this.originalBufferedImage = originalBufferedImage;
   }
 
   public int getWidth() {
@@ -54,8 +50,9 @@ public class ImageMatrix {
   }
 
   public BufferedImage toBufferedImage() {
-    final BufferedImage bufferedImage = new BufferedImage(width, height,
-        originalBufferedImage.getType());
+    final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
+
+    // TODO: normalize each band to be in range [0, 255]
 
     for (int y = 0; y < bufferedImage.getHeight(); y++) {
       for (int x = 0; x < bufferedImage.getWidth(); x++) {
@@ -81,7 +78,18 @@ public class ImageMatrix {
       }
     }
 
-    return new ImageMatrix(matrixPixels, imageType, bufferedImage);
+    return new ImageMatrix(matrixPixels, imageType);
+  }
+
+  public static ImageMatrix fromPixels(final double[][][] pixels) {
+    final Type type;
+    switch (pixels[0][0].length) { // All breaking cases here will lately derived into illegal states too
+      case 1: type = Type.BYTE_G; break;
+      case 3: type = Type.BYTE_RGB; break;
+      case 4: type = Type.BYTE_ARGB; break;
+      default: throw new IllegalStateException("Not a valid band number");
+    }
+    return new ImageMatrix(pixels, type);
   }
 
   private static Type getBufferedImageType(final BufferedImage bufferedImage) {
@@ -96,6 +104,16 @@ public class ImageMatrix {
         return Type.BYTE_ARGB;
       default:
         throw new IllegalArgumentException("Unsupported image");
+    }
+  }
+
+  private int bufferedImageType() {
+    switch (type) {
+      case BYTE_B: return BufferedImage.TYPE_BYTE_BINARY;
+      case BYTE_G: return BufferedImage.TYPE_BYTE_GRAY;
+      case BYTE_RGB: return BufferedImage.TYPE_3BYTE_BGR;
+      case BYTE_ARGB: return BufferedImage.TYPE_4BYTE_ABGR;
+      default: throw new IllegalArgumentException("Unsupported image");
     }
   }
 }

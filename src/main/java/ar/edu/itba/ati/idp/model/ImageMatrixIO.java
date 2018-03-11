@@ -8,13 +8,17 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 public abstract class ImageMatrixIO {
-
   public static ImageMatrix read(final Path path) throws IOException {
-    return ImageMatrix.fromBufferedImage(ImageIO.read(requireNonNull(path).toFile()));
+    return read(requireNonNull(path).toFile());
   }
 
   public static ImageMatrix read(final File file) throws IOException {
-    return ImageMatrix.fromBufferedImage(ImageIO.read(requireNonNull(file)));
+    final String fileExtension = getFileExtension(file);
+    if (PxmReader.supportsFileExtension(fileExtension)) {
+      return PxmReader.read(file);
+    } else { // default case is buffered image
+      return ImageMatrix.fromBufferedImage(ImageIO.read(requireNonNull(file)));
+    }
   }
 
   public static void write(final ImageMatrix imageMatrix, final File file) throws IOException {

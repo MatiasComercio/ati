@@ -8,6 +8,12 @@ import ar.edu.itba.ati.idp.ui.DropPane;
 import ar.edu.itba.ati.idp.ui.MainMenuBar;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
@@ -73,11 +79,11 @@ public class Main extends Application {
     }
 
     // TODO: Remove, para testeo unicamente
-    for (int y = 0; y < imageMatrix.getHeight(); y++) {
-      for (int x = 0; x < imageMatrix.getWidth(); x++) {
-        imageMatrix.setPixel(x, y, new double[]{0, 0, 0});
-      }
-    }
+//    for (int y = 0; y < imageMatrix.getHeight(); y++) {
+//      for (int x = 0; x < imageMatrix.getWidth(); x++) {
+//        imageMatrix.setPixel(x, y, new double[]{0, 0, 0});
+//      }
+//    }
 
     currentFile = file;
     currentImage = imageMatrix;
