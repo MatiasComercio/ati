@@ -31,7 +31,7 @@ public class DropPane extends BorderPane {
   private final Stage mainStage;
 
   private final VBox content;
-  private final Image image;
+  private final ImageView imageView;
   private final Text text;
   private final Button openButton;
 
@@ -42,9 +42,12 @@ public class DropPane extends BorderPane {
     this.mainStage = mainStage;
     this.content = new VBox();
     this.text = new Text(dropTextString);
-    this.image = image;
+    this.imageView = new ImageView(image);
     this.openButton = new Button(openTextString);
     this.openFileChooser = buildOpenFileChooser(openTextString);
+
+    this.imageView.setPreserveRatio(true);
+    this.imageView.setFitHeight(50);
 
     this.content.setPadding(new Insets(50, 70, 50, 70));
     this.content.setBorder(
@@ -56,7 +59,7 @@ public class DropPane extends BorderPane {
 //            BackgroundPosition.CENTER, new BackgroundSize(50, 50, false, false, false, false))));
     this.content.setAlignment(Pos.CENTER);
     this.content.setSpacing(15);
-    this.content.getChildren().addAll(new ImageView(this.image), this.text, this.openButton);
+    this.content.getChildren().addAll(this.imageView, this.text, this.openButton);
 
     this.text.setTextAlignment(TextAlignment.CENTER);
     this.text.setFont(Font.font(16));

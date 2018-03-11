@@ -1,8 +1,13 @@
 package ar.edu.itba.ati.idp;
 
+import static javafx.embed.swing.SwingFXUtils.toFXImage;
+
+import ar.edu.itba.ati.idp.model.ImageMatrix;
+import ar.edu.itba.ati.idp.model.ImageMatrixIO;
 import ar.edu.itba.ati.idp.ui.DropPane;
 import ar.edu.itba.ati.idp.ui.MainMenuBar;
 import java.io.File;
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
@@ -23,8 +28,13 @@ public class Main extends Application {
 
   private Stage mainStage;
   private MenuBar mainMenuBar;
-  private Pane noImagePane;
   private BorderPane mainPane;
+  private Pane noImagePane;
+  private ScrollPane imagePane;
+  private ImageView imageView;
+
+  private File currentFile;
+  private ImageMatrix currentImage;
 
   public static void main(String[] args) {
     launch(args);
@@ -34,8 +44,13 @@ public class Main extends Application {
   public void start(final Stage mainStage) {
     this.mainStage = mainStage;
     this.mainMenuBar = buildMenuBar(mainStage);
-    this.noImagePane = buildNoImagePane();
     this.mainPane = new BorderPane();
+    this.noImagePane = buildNoImagePane();
+    this.imageView = new ImageView();
+    this.imagePane = new ScrollPane(new BorderPane(this.imageView));
+
+    this.imagePane.setFitToWidth(true);
+    this.imagePane.setFitToHeight(true);
 
     this.mainPane.setTop(this.mainMenuBar);
     this.setNoImagePane();
@@ -59,20 +74,43 @@ public class Main extends Application {
     this.mainStage.show();
   }
 
-  // FIXME: Para testeo unicamente
   private void handleOpenFile(final File file) {
-    final Image image = new Image(file.toURI().toString());
-    final ImageView imageView = new ImageView(image);
-    final ScrollPane scrollPane = new ScrollPane(imageView);
-    mainPane.setCenter(scrollPane);
+    final ImageMatrix imageMatrix;
+    try {
+      imageMatrix = ImageMatrixIO.read(file);
+    } catch (final IOException exception) {
+      LOGGER.error(exception.getMessage(), exception);
+      return;
+    }
+
+    // TODO: Remove, para testeo unicamente
+    for (int y = 0; y < imageMatrix.getHeight(); y++) {
+      for (int x = 0; x < imageMatrix.getWidth(); x++) {
+        imageMatrix.setPixel(x, y, new double[]{0, 0, 0});
+      }
+    }
+
+    currentFile = file;
+    currentImage = imageMatrix;
+    imageView.setImage(toFXImage(imageMatrix.toBufferedImage(), null));
+    mainPane.setCenter(imagePane);
   }
 
   private void handleSaveAsFile(final File file) {
-
+    try {
+      ImageMatrixIO.write(currentImage, file);
+      currentFile = file;
+    } catch (IOException exception) {
+      LOGGER.error(exception.getMessage(), exception);
+    }
   }
 
   private void handleSaveFile() {
-
+    try {
+      ImageMatrixIO.write(currentImage, currentFile);
+    } catch (IOException exception) {
+      LOGGER.error(exception.getMessage(), exception);
+    }
   }
 
   private void handleCloseFile() {
@@ -92,8 +130,7 @@ public class Main extends Application {
   private Pane buildNoImagePane() {
     // TODO: Change to a better & local image
     final Image image = new Image(
-        "https://cdn3.iconfinder.com/data/icons/faticons/32/picture-01-256.png", 50, 50, true,
-        true);
+        "https://cdn3.iconfinder.com/data/icons/faticons/32/picture-01-256.png");
 
     final DropPane dropPane = new DropPane(mainStage, image, "Drag image here…", "Open image");
     dropPane.setOnOpenAction(this::handleOpenFile);
