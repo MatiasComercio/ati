@@ -73,8 +73,6 @@ public class SelectableAreaImageView extends Group {
       }
 
       selectionRectangle = new ResizableRectangle(event.getX(), event.getY(), 0, 0);
-      selectionRectangle.setMaxX(imageView.getImage().getWidth());
-      selectionRectangle.setMaxY(imageView.getImage().getHeight());
       outsideSelectionRectangles = buildOutsideSelectionRectangles(selectionRectangle);
 
       setPickOnBounds(true);

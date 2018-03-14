@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.shape.StrokeType;
 
 public class ResizableRectangle extends Rectangle {
 
@@ -19,9 +20,6 @@ public class ResizableRectangle extends Rectangle {
   private static final double RESIZER_SIDE = 4;
   private static final double RESIZE_MIN_X = 10;
   private static final double RESIZE_MIN_Y = 10;
-
-  private double maxX = Double.MAX_VALUE;
-  private double maxY = Double.MAX_VALUE;
 
   private double lastClickX;
   private double lastClickY;
@@ -33,6 +31,7 @@ public class ResizableRectangle extends Rectangle {
       final double height) {
     super(x, y, width, height);
     setStroke(STROKE_COLOR);
+    setStrokeType(StrokeType.INSIDE);
     setStrokeWidth(STROKE_WIDTH);
     setFill(Color.TRANSPARENT);
     addMoveHandlers(this);
@@ -56,14 +55,6 @@ public class ResizableRectangle extends Rectangle {
 
   public Collection<? extends Shape> getCornerResizers() {
     return cornerResizers;
-  }
-
-  public void setMaxX(final double maxX) {
-    this.maxX = maxX;
-  }
-
-  public void setMaxY(final double maxY) {
-    this.maxY = maxY;
   }
 
   private void addMoveHandlers(final Rectangle moveRect) {
@@ -103,20 +94,22 @@ public class ResizableRectangle extends Rectangle {
 
   private static boolean isValidX(final Rectangle rectangle, final double x) {
     return x >= rectangle.getParent().getLayoutBounds().getMinX()
-        && x + rectangle.getWidth() <= rectangle.getParent().getLayoutBounds().getWidth();
+        && x + rectangle.getWidth() <= rectangle.getParent().getLayoutBounds().getMaxX();
   }
 
   private static boolean isValidY(final Rectangle rectangle, final double y) {
     return y >= rectangle.getParent().getLayoutBounds().getMinY()
-        && y + rectangle.getHeight() <= rectangle.getParent().getLayoutBounds().getHeight();
+        && y + rectangle.getHeight() <= rectangle.getParent().getLayoutBounds().getMaxY();
   }
 
   private static boolean isValidWidth(final Rectangle rectangle, final double width) {
-    return rectangle.getX() + width <= rectangle.getParent().getLayoutBounds().getWidth();
+    return width >= 0
+        && rectangle.getX() + width <= rectangle.getParent().getLayoutBounds().getWidth();
   }
 
   private static boolean isValidHeight(final Rectangle rectangle, final double height) {
-    return rectangle.getY() + height <= rectangle.getParent().getLayoutBounds().getHeight();
+    return height >= 0
+        && rectangle.getY() + height <= rectangle.getParent().getLayoutBounds().getHeight();
   }
 
   private static final class RectangleResizers {
@@ -177,15 +170,17 @@ public class ResizableRectangle extends Rectangle {
         final double offsetY = event.getY() - rectangle.getY();
         final double newX = rectangle.getX() + offsetX;
         final double newY = rectangle.getY() + offsetY;
+        final double newWidth = rectangle.getWidth() - offsetX;
+        final double newHeight = rectangle.getHeight() - offsetY;
 
-        if (newX >= 0 && newX <= rectangle.getX() + rectangle.getWidth() - resizeMinX) {
+        if (isValidResizedWidth(rectangle, newX, newWidth)) {
           rectangle.setX(newX);
-          rectangle.setWidth(rectangle.getWidth() - offsetX);
+          rectangle.setWidth(newWidth);
         }
 
-        if (newY >= 0 && newY <= rectangle.getY() + rectangle.getHeight() - resizeMinY) {
+        if (RectangleResizers.isValidResizedHeight(rectangle, newY, newHeight)) {
           rectangle.setY(newY);
-          rectangle.setHeight(rectangle.getHeight() - offsetY);
+          rectangle.setHeight(newHeight);
         }
       });
 
@@ -200,14 +195,15 @@ public class ResizableRectangle extends Rectangle {
         final double offsetX = event.getX() - rectangle.getX();
         final double offsetY = event.getY() - rectangle.getY();
         final double newY = rectangle.getY() + offsetY;
+        final double newHeight = rectangle.getHeight() - offsetY;
 
-        if (offsetX >= 0 && offsetX >= resizeMinX) {
+        if (isValidResizedWidth(rectangle, offsetX)) {
           rectangle.setWidth(offsetX);
         }
 
-        if (newY >= 0 && newY <= rectangle.getY() + rectangle.getHeight() - resizeMinY) {
+        if (RectangleResizers.isValidResizedHeight(rectangle, newY, newHeight)) {
           rectangle.setY(newY);
-          rectangle.setHeight(rectangle.getHeight() - offsetY);
+          rectangle.setHeight(newHeight);
         }
       });
 
@@ -222,13 +218,14 @@ public class ResizableRectangle extends Rectangle {
         final double offsetX = event.getX() - rectangle.getX();
         final double offsetY = event.getY() - rectangle.getY();
         final double newX = rectangle.getX() + offsetX;
+        final double newWidth = rectangle.getWidth() - offsetX;
 
-        if (newX >= 0 && newX <= rectangle.getX() + rectangle.getWidth() - resizeMinX) {
+        if (isValidResizedWidth(rectangle, newX, newWidth)) {
           rectangle.setX(newX);
-          rectangle.setWidth(rectangle.getWidth() - offsetX);
+          rectangle.setWidth(newWidth);
         }
 
-        if (offsetY >= 0 && offsetY <= rectangle.getY() + rectangle.getHeight() + resizeMinY) {
+        if (isValidResizedHeight(rectangle, offsetY)) {
           rectangle.setHeight(offsetY);
         }
       });
@@ -244,11 +241,11 @@ public class ResizableRectangle extends Rectangle {
         final double offsetX = event.getX() - rectangle.getX();
         final double offsetY = event.getY() - rectangle.getY();
 
-        if (offsetX >= 0 && offsetX <= rectangle.getX() + rectangle.getWidth() + resizeMinX) {
+        if (isValidResizedWidth(rectangle, offsetX)) {
           rectangle.setWidth(offsetX);
         }
 
-        if (offsetY >= 0 && offsetY <= rectangle.getY() + rectangle.getHeight() + resizeMinY) {
+        if (isValidResizedHeight(rectangle, offsetY)) {
           rectangle.setHeight(offsetY);
         }
       });
@@ -263,10 +260,11 @@ public class ResizableRectangle extends Rectangle {
       resizeRectangle.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
         final double offsetY = event.getY() - rectangle.getY();
         final double newY = rectangle.getY() + offsetY;
+        final double newHeight = rectangle.getHeight() - offsetY;
 
-        if (newY >= 0 && newY <= rectangle.getY() + rectangle.getHeight()) {
+        if (RectangleResizers.isValidResizedHeight(rectangle, newY, newHeight)) {
           rectangle.setY(newY);
-          rectangle.setHeight(rectangle.getHeight() - offsetY);
+          rectangle.setHeight(newHeight);
         }
       });
 
@@ -280,7 +278,7 @@ public class ResizableRectangle extends Rectangle {
       resizeRectangle.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
         final double offsetX = event.getX() - rectangle.getX();
 
-        if (offsetX >= 0 && offsetX <= rectangle.getX() + rectangle.getWidth() - 5) {
+        if (isValidResizedWidth(rectangle, offsetX)) {
           rectangle.setWidth(offsetX);
         }
       });
@@ -295,10 +293,9 @@ public class ResizableRectangle extends Rectangle {
       resizeRectangle.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
         final double offsetY = event.getY() - rectangle.getY();
 
-        if (offsetY >= 0 && offsetY <= rectangle.getY() + rectangle.getHeight() - 5) {
+        if (isValidResizedHeight(rectangle, offsetY)) {
           rectangle.setHeight(offsetY);
         }
-
       });
 
       return resizeRectangle;
@@ -311,10 +308,11 @@ public class ResizableRectangle extends Rectangle {
       resizeRectangle.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
         final double offsetX = event.getX() - rectangle.getX();
         final double newX = rectangle.getX() + offsetX;
+        final double newWidth = rectangle.getWidth() - offsetX;
 
-        if (newX >= 0 && newX <= rectangle.getX() + rectangle.getWidth() - 5) {
+        if (isValidResizedWidth(rectangle, newX, newWidth)) {
           rectangle.setX(newX);
-          rectangle.setWidth(rectangle.getWidth() - offsetX);
+          rectangle.setWidth(newWidth);
         }
       });
 
@@ -337,6 +335,28 @@ public class ResizableRectangle extends Rectangle {
           resizeRect.getParent().setCursor(Cursor.DEFAULT));
 
       return resizeRect;
+    }
+
+    private static boolean isValidResizedWidth(final Rectangle rectangle, final double x,
+        final double width) {
+      return x >= rectangle.getParent().getLayoutBounds().getMinX()
+          && x + width <= rectangle.getParent().getLayoutBounds().getMaxX()
+          && x <= rectangle.getX() + rectangle.getWidth();
+    }
+
+    private static boolean isValidResizedWidth(final Rectangle rectangle, final double width) {
+      return ResizableRectangle.isValidWidth(rectangle, width);
+    }
+
+    private static boolean isValidResizedHeight(final Rectangle rectangle, final double y,
+        final double height) {
+      return y >= rectangle.getParent().getLayoutBounds().getMinY()
+          && y + height <= rectangle.getParent().getLayoutBounds().getMaxY()
+          && y <= rectangle.getY() + rectangle.getHeight();
+    }
+
+    private static boolean isValidResizedHeight(final Rectangle rectangle, final double height) {
+      return ResizableRectangle.isValidHeight(rectangle, height);
     }
   }
 }
