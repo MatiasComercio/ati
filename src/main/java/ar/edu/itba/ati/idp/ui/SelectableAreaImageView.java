@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Optional;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -25,40 +26,15 @@ public class SelectableAreaImageView extends Group {
   private ResizableRectangle selectionRectangle;
   private Collection<Rectangle> outsideSelectionRectangles;
 
+  private double rectangleStartX;
+  private double rectangleStartY;
+
   public SelectableAreaImageView(final ImageView imageView) {
     super(imageView);
 
     this.imageView = requireNonNull(imageView);
     this.onMousePressedEventHandler = buildOnMousePressedEventHandler();
     this.onMouseDraggedEventHandler = buildOnMouseDraggedEventHandler();
-  }
-
-  public void enableSelection() {
-    imageView.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    imageView.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
-  }
-
-  public void disableSelection() {
-    imageView.removeEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    imageView.removeEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
-  }
-
-  public void clearSelection() {
-    if (selectionRectangle == null || outsideSelectionRectangles == null) {
-      return;
-    }
-
-    getChildren().removeAll(outsideSelectionRectangles);
-    getChildren().remove(selectionRectangle);
-    getChildren().removeAll(selectionRectangle.getSideResizers());
-    getChildren().removeAll(selectionRectangle.getCornerResizers());
-
-    selectionRectangle = null;
-    outsideSelectionRectangles = null;
-  }
-
-  public Optional<Rectangle> getSelectionRectangle() {
-    return Optional.ofNullable(selectionRectangle);
   }
 
   private EventHandler<MouseEvent> buildOnMousePressedEventHandler() {
@@ -72,10 +48,12 @@ public class SelectableAreaImageView extends Group {
         return;
       }
 
+      rectangleStartX = event.getX();
+      rectangleStartY = event.getY();
+
       selectionRectangle = new ResizableRectangle(event.getX(), event.getY(), 0, 0);
       outsideSelectionRectangles = buildOutsideSelectionRectangles(selectionRectangle);
 
-      setPickOnBounds(true);
       getChildren().addAll(outsideSelectionRectangles);
       getChildren().add(selectionRectangle);
       getChildren().addAll(selectionRectangle.getSideResizers());
@@ -93,46 +71,56 @@ public class SelectableAreaImageView extends Group {
         return;
       }
 
-      final double offsetX = event.getX() - selectionRectangle.getX();
-      final double offsetY = event.getY() - selectionRectangle.getY();
+      final double offsetX = event.getX() - rectangleStartX;
+      final double offsetY = event.getY() - rectangleStartY;
 
       if (offsetX > 0) {
         if (event.getX() > imageView.getImage().getWidth()) {
-          selectionRectangle.setWidth(imageView.getImage().getWidth() - selectionRectangle.getX());
+          selectionRectangle.setWidth(imageView.getImage().getWidth() - rectangleStartX);
         } else {
           selectionRectangle.setWidth(offsetX);
         }
       } else {
-        final double oldX = selectionRectangle.getX();
-
         if (event.getX() < 0) {
           selectionRectangle.setX(0);
         } else {
           selectionRectangle.setX(event.getX());
         }
 
-        selectionRectangle.setWidth(oldX - selectionRectangle.getX());
+        selectionRectangle.setWidth(rectangleStartX - selectionRectangle.getX());
       }
 
       if (offsetY > 0) {
         if (event.getY() > imageView.getImage().getHeight()) {
           selectionRectangle
-              .setHeight(imageView.getImage().getHeight() - selectionRectangle.getY());
+              .setHeight(imageView.getImage().getHeight() - rectangleStartY);
         } else {
           selectionRectangle.setHeight(offsetY);
         }
       } else {
-        final double oldY = selectionRectangle.getY();
-
         if (event.getY() < 0) {
           selectionRectangle.setY(0);
         } else {
           selectionRectangle.setY(event.getY());
         }
 
-        selectionRectangle.setHeight(oldY - selectionRectangle.getY());
+        selectionRectangle.setHeight(rectangleStartY - selectionRectangle.getY());
       }
     };
+  }
+
+  public void clearSelection() {
+    if (selectionRectangle == null || outsideSelectionRectangles == null) {
+      return;
+    }
+
+    getChildren().removeAll(outsideSelectionRectangles);
+    getChildren().remove(selectionRectangle);
+    getChildren().removeAll(selectionRectangle.getSideResizers());
+    getChildren().removeAll(selectionRectangle.getCornerResizers());
+
+    selectionRectangle = null;
+    outsideSelectionRectangles = null;
   }
 
   private Collection<Rectangle> buildOutsideSelectionRectangles(final Rectangle rectangle) {
@@ -161,18 +149,33 @@ public class SelectableAreaImageView extends Group {
         imageView.getImage().heightProperty()
             .subtract(rectangle.yProperty().add(rectangle.heightProperty())));
 
-    darkAreaTop.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    darkAreaTop.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
-
-    darkAreaLeft.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    darkAreaLeft.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
-
-    darkAreaRight.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    darkAreaRight.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
-
-    darkAreaBottom.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
-    darkAreaBottom.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
+    addSelectionMouseHandlers(darkAreaTop);
+    addSelectionMouseHandlers(darkAreaLeft);
+    addSelectionMouseHandlers(darkAreaRight);
+    addSelectionMouseHandlers(darkAreaBottom);
 
     return Arrays.asList(darkAreaTop, darkAreaLeft, darkAreaBottom, darkAreaRight);
+  }
+
+  private void addSelectionMouseHandlers(final Node node) {
+    node.addEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
+    node.addEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
+  }
+
+  public void enableSelection() {
+    addSelectionMouseHandlers(imageView);
+  }
+
+  public void disableSelection() {
+    removeSelectionMouseHandlers(imageView);
+  }
+
+  private void removeSelectionMouseHandlers(final Node node) {
+    node.removeEventHandler(MouseEvent.MOUSE_PRESSED, onMousePressedEventHandler);
+    node.removeEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
+  }
+
+  public Optional<Rectangle> getSelectionRectangle() {
+    return Optional.ofNullable(selectionRectangle);
   }
 }
