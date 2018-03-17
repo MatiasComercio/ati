@@ -90,7 +90,7 @@ public class Main extends Application {
     this.selectableAreaImageView.enableSelection();
     currentFile = file;
     currentImage = imageMatrix;
-    imageView.setImage(toFXImage(imageMatrix.toBufferedImage(), null));
+    imageView.setImage(toFXImage(currentImage.toBufferedImage(), null));
     mainPane.setCenter(imagePane);
   }
 

@@ -14,6 +14,7 @@ import java.util.List;
 // PPM: http://netpbm.sourceforge.net/doc/ppm.html
 // Based on: https://gist.github.com/armanbilge/3276d80030d1caa2ed7c
 public abstract class PxmReader {
+
   private static final char COMMENT = '#';
   private static final int EOF = -1;
   private static final int MAX_VALUE_ONE_BYTE = 255;
@@ -47,7 +48,7 @@ public abstract class PxmReader {
   }
 
   public static ImageMatrix read(final Path path) throws IOException {
-    try(BufferedInputStream stream = new BufferedInputStream(Files.newInputStream(path))) {
+    try (BufferedInputStream stream = new BufferedInputStream(Files.newInputStream(path))) {
       final String magicNumber = next(stream);
       final int width = Integer.parseInt(next(stream));
       final int height = Integer.parseInt(next(stream));
@@ -61,16 +62,22 @@ public abstract class PxmReader {
 
   private static PxmToPixels getPxmToPixels(final String magicNumber) {
     switch (magicNumber) {
-      case PGM_RAW_MAGIC_NUMBER: return PGM_RAW_TO_PIXELS;
-      case PGM_PLAIN_MAGIC_NUMBER: return PGM_PLAIN_TO_PIXELS;
-      case PPM_RAW_MAGIC_NUMBER: return PPM_RAW_TO_PIXELS;
-      case PPM_PLAIN_MAGIC_NUMBER: return PPM_PLAIN_TO_PIXELS;
-      default: throw new IllegalStateException("Not a valid PGM magic number");
+      case PGM_RAW_MAGIC_NUMBER:
+        return PGM_RAW_TO_PIXELS;
+      case PGM_PLAIN_MAGIC_NUMBER:
+        return PGM_PLAIN_TO_PIXELS;
+      case PPM_RAW_MAGIC_NUMBER:
+        return PPM_RAW_TO_PIXELS;
+      case PPM_PLAIN_MAGIC_NUMBER:
+        return PPM_PLAIN_TO_PIXELS;
+      default:
+        throw new IllegalStateException("Not a valid PGM magic number");
     }
   }
 
   /**
    * Finds the next whitespace-delimited string in a stream, ignoring any comments.
+   *
    * @param stream the stream read from
    * @return the next whitespace-delimited string
    * @throws IOException .
@@ -89,7 +96,8 @@ public abstract class PxmReader {
           } while (d != -1 && d != '\n' && d != '\r');
         } else if (!Character.isWhitespace(c)) {
           bytes.add((byte) b);
-        } else if (bytes.size() > 0) { // If there is any space saved when `c` is a whitespace => return that
+        } else if (bytes.size()
+            > 0) { // If there is any space saved when `c` is a whitespace => return that
           break;
         }
       } else { // Finished the file
@@ -105,6 +113,7 @@ public abstract class PxmReader {
 
 
   private interface PxmToPixels {
+
     double[][][] convert(BufferedInputStream stream, int width, int height, int maxValue)
         throws IOException;
   }
@@ -113,10 +122,10 @@ public abstract class PxmReader {
     PGM_RAW_TO_PIXELS = (stream, width, height, maxValue) -> {
       final int bandsNum = 1; // Grey band
       final int band = 0;
-      final double[][][] pixels = new double[height][width][bandsNum];
+      final double[][][] pixels = new double[bandsNum][height][width];
 
-      for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
           int pixel = safeReadByte(stream);
           if (pixel == EOF) {
             throw new IllegalStateException("Reached end-of-file-prematurely");
@@ -125,7 +134,7 @@ public abstract class PxmReader {
             pixel <<= ONE_BYTE_IN_BITS;
             pixel &= safeReadByte(stream);
           }
-          pixels[x][y][band] = pixel; // Normalization occurs only when showing the image
+          pixels[band][y][x] = pixel; // Normalization occurs only when showing the image
         }
       }
 
@@ -135,17 +144,17 @@ public abstract class PxmReader {
     PGM_PLAIN_TO_PIXELS = (stream, width, height, maxValue) -> {
       final int bandsNum = 1; // Grey band
       final int band = 0;
-      final double[][][] pixels = new double[height][width][bandsNum];
+      final double[][][] pixels = new double[bandsNum][height][width];
 
-      for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
           int pixel;
           try {
             pixel = Integer.parseInt(next(stream));
           } catch (final NumberFormatException e) {
             throw new IllegalStateException("Reached end-of-file-prematurely");
           }
-          pixels[x][y][band] = pixel;
+          pixels[band][y][x] = pixel;
         }
       }
 
@@ -154,17 +163,17 @@ public abstract class PxmReader {
 
     PPM_RAW_TO_PIXELS = (stream, width, height, maxValue) -> {
       final int bandsNum = 3; // RGB band
-      final double[][][] pixels = new double[height][width][bandsNum];
+      final double[][][] pixels = new double[bandsNum][height][width];
 
-      for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
           for (int band = 0; band < bandsNum; band++) {
             int pixel = safeReadByte(stream);
             if (maxValue > MAX_VALUE_ONE_BYTE) {
               pixel <<= ONE_BYTE_IN_BITS;
               pixel &= safeReadByte(stream);
             }
-            pixels[x][y][band] = pixel; // Normalization occurs only when showing the image
+            pixels[band][y][x] = pixel; // Normalization occurs only when showing the image
           }
         }
       }
@@ -174,10 +183,10 @@ public abstract class PxmReader {
 
     PPM_PLAIN_TO_PIXELS = (stream, width, height, maxValue) -> {
       final int bandsNum = 3; // RGB band
-      final double[][][] pixels = new double[height][width][bandsNum];
+      final double[][][] pixels = new double[bandsNum][height][width];
 
-      for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
           for (int band = 0; band < bandsNum; band++) {
             int pixel;
             try {
@@ -185,7 +194,7 @@ public abstract class PxmReader {
             } catch (final NumberFormatException e) {
               throw new IllegalStateException("Reached end-of-file-prematurely");
             }
-            pixels[x][y][band] = pixel;
+            pixels[band][y][x] = pixel;
           }
         }
       }
