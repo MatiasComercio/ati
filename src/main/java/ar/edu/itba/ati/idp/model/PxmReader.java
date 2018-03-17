@@ -47,7 +47,7 @@ public abstract class PxmReader {
     });
   }
 
-  public static ImageMatrix read(final Path path) throws IOException {
+  private static ImageMatrix read(final Path path) throws IOException {
     try (BufferedInputStream stream = new BufferedInputStream(Files.newInputStream(path))) {
       final String magicNumber = next(stream);
       final int width = Integer.parseInt(next(stream));

@@ -66,11 +66,11 @@ public class DropPane extends BorderPane {
     this.configureDrag();
   }
 
-  public void setOnOpenAction(final Consumer<File> openHandler) {
+  public void setOnOpenAction(final Consumer<List<File>> openHandler) {
     openButton.setOnAction(event -> {
-      final File file = openFileChooser.showOpenDialog(mainStage);
-      if (file != null) {
-        openHandler.accept(file);
+      final List<File> files = openFileChooser.showOpenMultipleDialog(mainStage);
+      if (files != null) {
+        openHandler.accept(files);
       }
     });
 
@@ -78,7 +78,7 @@ public class DropPane extends BorderPane {
       final Dragboard dragboard = event.getDragboard();
       if (dragboard.hasFiles()) {
         final List<File> files = dragboard.getFiles();
-        openHandler.accept(files.get(0));
+        openHandler.accept(files);
       }
     });
   }

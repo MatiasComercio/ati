@@ -9,6 +9,7 @@ import ar.edu.itba.ati.idp.ui.MainMenuBar;
 import ar.edu.itba.ati.idp.ui.SelectableAreaImageView;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
@@ -71,24 +72,17 @@ public class Main extends Application {
     this.mainStage.show();
   }
 
-  private void handleOpenFile(final File file) {
+  private void handleOpenFiles(final List<File> files) {
     final ImageMatrix imageMatrix;
     try {
-      imageMatrix = ImageMatrixIO.read(file);
+      imageMatrix = ImageMatrixIO.read(files);
     } catch (final IOException exception) {
       LOGGER.error(exception.getMessage(), exception);
       return;
     }
 
-//    // TODO: Remove, para testeo unicamente
-//    for (int y = 0; y < imageMatrix.getHeight(); y++) {
-//      for (int x = 0; x < imageMatrix.getWidth(); x++) {
-//        imageMatrix.setPixel(x, y, new double[]{0, 0, 0});
-//      }
-//    }
-
     this.selectableAreaImageView.enableSelection();
-    currentFile = file;
+    currentFile = files.get(0); // FIXME: hardcoded file
     currentImage = imageMatrix;
     imageView.setImage(toFXImage(currentImage.toBufferedImage(), null));
     mainPane.setCenter(imagePane);
@@ -105,7 +99,7 @@ public class Main extends Application {
 
   private void handleSaveFile() {
     try {
-      ImageMatrixIO.write(currentImage, currentFile);
+      ImageMatrixIO.write(currentImage, currentFile); // FIXME: raw image cases
     } catch (IOException exception) {
       LOGGER.error(exception.getMessage(), exception);
     }
@@ -117,7 +111,7 @@ public class Main extends Application {
 
   private MenuBar buildMenuBar(final Stage primaryStage) {
     final MainMenuBar mainMenuBar = new MainMenuBar(primaryStage);
-    mainMenuBar.setOnOpenAction(this::handleOpenFile);
+    mainMenuBar.setOnOpenAction(this::handleOpenFiles);
     mainMenuBar.setOnSaveAction(this::handleSaveFile);
     mainMenuBar.setOnSaveAsAction(this::handleSaveAsFile);
     mainMenuBar.setOnCloseAction(this::handleCloseFile);
@@ -129,7 +123,7 @@ public class Main extends Application {
     final Image image = new Image("file:src/main/resources/ui/icons/image_icon.png");
 
     final DropPane dropPane = new DropPane(mainStage, image, "Drag image here…", "Open image");
-    dropPane.setOnOpenAction(this::handleOpenFile);
+    dropPane.setOnOpenAction(this::handleOpenFiles);
 
     return dropPane;
   }

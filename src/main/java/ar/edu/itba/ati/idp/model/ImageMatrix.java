@@ -83,7 +83,7 @@ public class ImageMatrix {
 //    return Arrays.copyOf(pixels[y][x], pixels[y][x].length);
 //  }
 //
-//  // TODO: Remove
+//  // TODO: Remove?
 //  private void setPixel(final int x, final int y, final double[] pixel) {
 //    arraycopy(pixel, 0, pixels[y][x], 0, pixels[y][x].length);
 //  }
@@ -159,20 +159,12 @@ public class ImageMatrix {
     final Type type;
 
     switch (pixels.length) { // All breaking cases here will lately derived into illegal states too
-      case 1:
-        type = Type.BYTE_G;
-        break;
-      case 3:
-        type = Type.BYTE_RGB;
-        break;
-      case 4:
-        type = Type.BYTE_ARGB;
-        break;
-      default:
-        throw new IllegalArgumentException("Unsupported band size");
+      case 1: type = Type.BYTE_G; break;
+      case 3: type = Type.BYTE_RGB; break;
+      case 4: type = Type.BYTE_ARGB; break;
+      default: throw new IllegalStateException("Unsupported band size");
     }
-
-    return new ImageMatrix(pixels, type);
+    return new ImageMatrix(pixels, type); // TODO: clonar la matriz de pixeles
   }
 
   public enum Type {

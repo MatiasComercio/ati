@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -17,15 +18,21 @@ import javafx.stage.Stage;
 public class MainMenuBar extends MenuBar {
 
   // TODO: Sacar de otro lado
-  private static final List<String> supportedExtensions = Arrays.asList("raw", "pgm", "ppm", "bmp");
-  private static final List<ExtensionFilter> extensionFilters = supportedExtensions.stream()
-      .map((ext) -> new ExtensionFilter(ext.toUpperCase(), "*." + ext))
-      .collect(Collectors.toList());
+  // TODO: implement the same filter for the DropPane
+  private static final List<String> SUPPORTED_EXTENSIONS = Arrays.asList("raw", "header", "pgm", "ppm", "bmp");
+  private static final List<ExtensionFilter> EXTENSION_FILTERS;
 
   static {
-    extensionFilters
-        .add(0, new ExtensionFilter("All supported", supportedExtensions.stream()
-            .map(ext -> "*." + ext).collect(Collectors.toList())));
+    EXTENSION_FILTERS = SUPPORTED_EXTENSIONS.stream()
+        .map((ext) -> new ExtensionFilter(ext.toUpperCase(), "*." + ext, "*." + ext.toUpperCase()))
+        .collect(Collectors.toList());
+
+
+    EXTENSION_FILTERS
+        .add(0, new ExtensionFilter("All supported",
+            SUPPORTED_EXTENSIONS.stream()
+                .map(ext -> Stream.of("*." + ext, "*." + ext.toUpperCase()))
+                .flatMap(stringStream -> stringStream).collect(Collectors.toList())));
   }
 
   private final Stage mainStage;
@@ -76,11 +83,11 @@ public class MainMenuBar extends MenuBar {
     this.getMenus().addAll(menuFile, menuEdit, menuView, menuHelp);
   }
 
-  public void setOnOpenAction(final Consumer<File> openHandler) {
+  public void setOnOpenAction(final Consumer<List<File>> openHandler) {
     itemOpen.setOnAction(event -> {
-      final File file = openFileChooser.showOpenDialog(mainStage);
-      if (file != null) {
-        openHandler.accept(file);
+      final List<File> files = openFileChooser.showOpenMultipleDialog(mainStage);
+      if (files != null) {
+        openHandler.accept(files);
       }
     });
   }
@@ -113,7 +120,7 @@ public class MainMenuBar extends MenuBar {
   private static FileChooser buildOpenFileChooser() {
     final FileChooser openFileChooser = new FileChooser();
     openFileChooser.setTitle("Open image...");
-    openFileChooser.getExtensionFilters().addAll(extensionFilters);
+    openFileChooser.getExtensionFilters().addAll(EXTENSION_FILTERS);
 
     return openFileChooser;
   }
