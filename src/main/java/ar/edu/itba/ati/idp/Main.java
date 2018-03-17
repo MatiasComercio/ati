@@ -6,14 +6,9 @@ import ar.edu.itba.ati.idp.model.ImageMatrix;
 import ar.edu.itba.ati.idp.model.ImageMatrixIO;
 import ar.edu.itba.ati.idp.ui.DropPane;
 import ar.edu.itba.ati.idp.ui.MainMenuBar;
+import ar.edu.itba.ati.idp.ui.SelectableAreaImageView;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.MenuBar;
@@ -26,6 +21,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: Unificar los FileChooser
 public class Main extends Application {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -38,6 +34,7 @@ public class Main extends Application {
   private Pane noImagePane;
   private ScrollPane imagePane;
   private ImageView imageView;
+  private SelectableAreaImageView selectableAreaImageView;
 
   private File currentFile;
   private ImageMatrix currentImage;
@@ -48,20 +45,25 @@ public class Main extends Application {
 
   @Override
   public void start(final Stage mainStage) {
-    this.mainStage = mainStage;
     this.mainMenuBar = buildMenuBar(mainStage);
-    this.mainPane = new BorderPane();
-    this.noImagePane = buildNoImagePane();
-    this.imageView = new ImageView();
-    this.imagePane = new ScrollPane(new BorderPane(this.imageView));
 
+    this.mainPane = new BorderPane();
+    this.mainPane.setTop(this.mainMenuBar);
+
+    this.noImagePane = buildNoImagePane();
+    this.setNoImagePane();
+
+    this.imageView = new ImageView();
+
+    this.selectableAreaImageView = new SelectableAreaImageView(imageView);
+
+    this.imagePane = new ScrollPane(new BorderPane(this.selectableAreaImageView));
     this.imagePane.setFitToWidth(true);
     this.imagePane.setFitToHeight(true);
 
-    this.mainPane.setTop(this.mainMenuBar);
-    this.setNoImagePane();
     // TODO: Restrict UI min size to window components
 
+    this.mainStage = mainStage;
     this.mainStage.setTitle(APPLICATION_NAME);
     this.mainStage.setOnCloseRequest(event -> System.exit(0));
     this.mainStage.centerOnScreen();
@@ -78,13 +80,14 @@ public class Main extends Application {
       return;
     }
 
-    // TODO: Remove, para testeo unicamente
+//    // TODO: Remove, para testeo unicamente
 //    for (int y = 0; y < imageMatrix.getHeight(); y++) {
 //      for (int x = 0; x < imageMatrix.getWidth(); x++) {
 //        imageMatrix.setPixel(x, y, new double[]{0, 0, 0});
 //      }
 //    }
 
+    this.selectableAreaImageView.enableSelection();
     currentFile = file;
     currentImage = imageMatrix;
     imageView.setImage(toFXImage(imageMatrix.toBufferedImage(), null));
