@@ -35,10 +35,6 @@ public abstract class PxmReader {
   private static final PxmToPixels PPM_RAW_TO_PIXELS;
   private static final PxmToPixels PPM_PLAIN_TO_PIXELS;
 
-  public static ImageMatrix read(final File file) throws IOException {
-    return read(file.toPath());
-  }
-
   public static boolean supportsFileExtension(final String fileExtension) {
     final String lowerCaseFileExtension = fileExtension.toLowerCase();
     return SUPPORTED_FILE_EXTENSIONS.stream().anyMatch(supportedFileExtension -> {
@@ -47,7 +43,11 @@ public abstract class PxmReader {
     });
   }
 
-  private static ImageMatrix read(final Path path) throws IOException {
+  public static ImageFile read(final File file) throws IOException {
+    return read(file.toPath());
+  }
+
+  private static ImageFile read(final Path path) throws IOException {
     try (BufferedInputStream stream = new BufferedInputStream(Files.newInputStream(path))) {
       final String magicNumber = next(stream);
       final int width = Integer.parseInt(next(stream));
@@ -56,7 +56,9 @@ public abstract class PxmReader {
 
       final PxmToPixels pxmToPixels = getPxmToPixels(magicNumber);
 
-      return ImageMatrix.fromPixels(pxmToPixels.convert(stream, width, height, maxValue));
+      final double[][][] pixels = pxmToPixels.convert(stream, width, height, maxValue);
+      final ImageMatrix imageMatrix = ImageMatrix.fromPixels(pixels);
+      return new ImageFile(path.toFile(), imageMatrix);
     }
   }
 
@@ -78,7 +80,7 @@ public abstract class PxmReader {
   /**
    * Finds the next whitespace-delimited string in a stream, ignoring any comments.
    *
-   * @param stream the stream read from
+   * @param stream the stream load from
    * @return the next whitespace-delimited string
    * @throws IOException .
    */

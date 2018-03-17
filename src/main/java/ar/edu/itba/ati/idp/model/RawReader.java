@@ -18,7 +18,7 @@ public class RawReader {
     return RAW_FILE_EXTENSION.equalsIgnoreCase(fileExtension);
   }
 
-  public static ImageMatrix read(final File headerFile, final File rawFile) throws IOException {
+  public static ImageFile read(final File headerFile, final File rawFile) throws IOException {
     // header file should have: width height
     final Scanner scanner = new Scanner(Files.newInputStream(headerFile.toPath()));
     final int width = scanner.nextInt();
@@ -35,6 +35,6 @@ public class RawReader {
         pixels[band][y][x] = inputStream.read();
       }
     }
-    return ImageMatrix.fromPixels(pixels);
+    return new ImageFile(rawFile, ImageMatrix.fromPixels(pixels)); // TODO: think: only saving the rawFile. Is this correct?
   }
 }

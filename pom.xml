@@ -12,12 +12,85 @@
   <url>http://maven.apache.org</url>
 
   <properties>
+    <!-- Project specific settings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <mainClass>ar.edu.itba.ati.idp.Main</mainClass>
+    <jar.name>ati</jar.name>
+
+    <!-- Plugins + dependencies versions -->
     <org.slf4j.version>1.7.25</org.slf4j.version>
     <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
+    <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+    <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
+    <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly-plugin.version}</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>${mainClass}</mainClass>
+            </manifest>
+          </archive>
+          <!-- Rename .jar file and disable the append of 'jar-with-dependencies -->
+          <finalName>${jar.name}</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+          <!-- / -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+            <phase>package</phase> <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin.version}</version>
+        <configuration>
+          <excludes>
+            <packagingExcludes>**/logback-test.xml</packagingExcludes>
+          </excludes>
+          <archive>
+            <manifest>
+              <mainClass>${mainClass}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <!-- Prevents an endPosTable exception during compilation => for Immutables -->
+          <useIncrementalCompilation>false</useIncrementalCompilation>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <!-- Name the jar file. -->
+    <!--Default: -->
+    <!-- <finalName>${project.artifactId}-${project.version}</finalName> -->
+    <finalName>${jar.name}-without-dependencies</finalName>
+  </build>
 
   <dependencies>
     <!--LOGGING-->
