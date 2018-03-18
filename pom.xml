@@ -26,6 +26,7 @@
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+    <commons-io.version>2.6</commons-io.version>
   </properties>
 
   <build>
@@ -108,6 +109,11 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
       <version>${ch.qos.logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
     </dependency>
     <!--^LOGGING^-->
   </dependencies>

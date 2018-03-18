@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.DropPaneController?>
+<?import ar.edu.itba.ati.idp.ui.controller.MenuBarController?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.edu.itba.ati.idp.ui.controller.Workspace">
+  <top>
+    <MenuBarController fx:id="mainMenuBar" />
+  </top>
+   <center>
+      <DropPaneController fx:id="dropPane" />
+   </center>
+</BorderPane>

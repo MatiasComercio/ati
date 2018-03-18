@@ -1,6 +1,6 @@
 package ar.edu.itba.ati.idp;
 
-import ar.edu.itba.ati.idp.model.Workspace;
+import ar.edu.itba.ati.idp.ui.controller.Workspace;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

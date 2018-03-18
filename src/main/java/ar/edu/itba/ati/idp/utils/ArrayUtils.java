@@ -2,7 +2,17 @@ package ar.edu.itba.ati.idp.utils;
 
 import java.util.Arrays;
 
-public abstract class Arrays2D {
+public abstract class ArrayUtils {
+
+  public static double[][][] copyOf(final double[][][] original) {
+    final double[][][] copy = new double[original.length][][];
+
+    for (int i = 0; i < original.length; i++) {
+      copy[i] = copyOf(original[i]);
+    }
+
+    return copy;
+  }
 
   public static double[][] copyOf(final double[][] original) {
     final double[][] copy = new double[original.length][];

@@ -1,12 +1,14 @@
 package ar.edu.itba.ati.idp.model;
 
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
-import ar.edu.itba.ati.idp.utils.Arrays2D;
+import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.awt.image.BufferedImage;
 import java.util.function.DoubleUnaryOperator;
 
 public class ImageMatrix {
+  private static final int DEFAULT_MAX_PIXEL_VALUE = 255;
 
+  /** Non-Interleaved pixels */
   private final double[][][] pixels;
   private final int width;
   private final int height;
@@ -18,6 +20,8 @@ public class ImageMatrix {
     this.height = pixels[0].length;
     this.type = type;
   }
+
+  // ========================= Builders ========================= //
 
   public static ImageMatrix fromBufferedImage(final BufferedImage bufferedImage) {
     final Type imageType = getBufferedImageType(bufferedImage);
@@ -34,6 +38,20 @@ public class ImageMatrix {
 
     return new ImageMatrix(matrixPixels, imageType);
   }
+
+  public static ImageMatrix fromNonInterleavedPixels(final double[][][] pixels) {
+    final Type type;
+
+    switch (pixels.length) { // All breaking cases here will lately derived into illegal states too
+      case 1: type = Type.BYTE_G; break;
+      case 3: type = Type.BYTE_RGB; break;
+      case 4: type = Type.BYTE_ARGB; break;
+      default: throw new IllegalStateException("Unsupported band size");
+    }
+    return new ImageMatrix(normalizeNonInterleavedPixelsToDouble(pixels), type);
+  }
+
+  // ========================= \Builders ========================= //
 
   private static Type getBufferedImageType(final BufferedImage bufferedImage) {
     switch (bufferedImage.getType()) {
@@ -58,44 +76,14 @@ public class ImageMatrix {
     return height;
   }
 
-  public void normalize() {
-    for (final double[][] band : pixels) {
-      normalize(band);
-    }
-  }
-
-  private void normalize(final double[][] band) {
-    final double[] minAndMax = Arrays2D.minAndMax(band);
-    final double min = minAndMax[0];
-    final double max = minAndMax[1];
-    final double m = 255 / (max - min);
-    final double b = -m * min;
-
-    for (int y = 0; y < band.length; y++) {
-      for (int x = 0; x < band[y].length; x++) {
-        band[y][x] = m * band[y][x] + b;
-      }
-    }
-  }
-
-//  // TODO: Remove?
-//  public double[] getPixel(final int x, final int y) {
-//    return Arrays.copyOf(pixels[y][x], pixels[y][x].length);
-//  }
-//
-//  // TODO: Remove?
-//  private void setPixel(final int x, final int y, final double[] pixel) {
-//    arraycopy(pixel, 0, pixels[y][x], 0, pixels[y][x].length);
-//  }
-
-  public Type getType() {
-    return type;
+  public int getMaxNormalizedPixelValue() {
+    return DEFAULT_MAX_PIXEL_VALUE;
   }
 
   public BufferedImage toBufferedImage() {
     final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
 
-    // TODO: normalize each band to be in range [0, 255]
+    // TODO: check if normalization should be performed
 
     for (int b = 0; b < type.numBands; b++) {
       for (int y = 0; y < bufferedImage.getHeight(); y++) {
@@ -127,7 +115,7 @@ public class ImageMatrix {
     final double[][][] newPixels = new double[type.numBands][][];
 
     for (int b = 0; b < type.numBands; b++) {
-      newPixels[b] = function.apply(Arrays2D.copyOf(pixels[b]));
+      newPixels[b] = function.apply(ArrayUtils.copyOf(pixels[b]));
     }
 
     return new ImageMatrix(newPixels, type);
@@ -140,7 +128,7 @@ public class ImageMatrix {
       newPixels[b] = apply(pixels[b], function);
     }
 
-    return ImageMatrix.fromPixels(newPixels);
+    return ImageMatrix.fromNonInterleavedPixels(newPixels);
   }
 
   private static double[][] apply(final double[][] currentPixels, final DoubleUnaryOperator func) {
@@ -155,18 +143,6 @@ public class ImageMatrix {
     return newPixels;
   }
 
-  public static ImageMatrix fromPixels(final double[][][] pixels) {
-    final Type type;
-
-    switch (pixels.length) { // All breaking cases here will lately derived into illegal states too
-      case 1: type = Type.BYTE_G; break;
-      case 3: type = Type.BYTE_RGB; break;
-      case 4: type = Type.BYTE_ARGB; break;
-      default: throw new IllegalStateException("Unsupported band size");
-    }
-    return new ImageMatrix(pixels, type); // TODO: clonar la matriz de pixeles
-  }
-
   public enum Type {
     BYTE_B(1), BYTE_G(1), BYTE_RGB(3), BYTE_ARGB(4);
 
@@ -176,4 +152,64 @@ public class ImageMatrix {
       this.numBands = numBands;
     }
   }
+  
+  // ========================= Normalizers ========================= //
+
+  private interface PixelStore {
+    void store(int normalizedPixel, int x, int y);
+  }
+
+  public int[][][] normalizePixelsToBytes() {
+    return normalizeNonInterleavedPixelsToBytes(pixels);
+  }
+
+  public int[][][] normalizePixelsToInterleavedBytes() {
+    final int[][][] normalizedPixels = new int[height][width][type.numBands];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int currentBandNum = bandNum;
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> normalizedPixels[y][x][currentBandNum] = normalizedPixel);
+    }
+    return normalizedPixels;
+  }
+
+  private static int[][][] normalizeNonInterleavedPixelsToBytes(final double[][][] pixels) {
+    final int[][][] normalizedPixels = new int[pixels.length][][];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int height = pixels[bandNum].length;
+      final int width = pixels[bandNum][0].length;
+      final int[][] bandPixels = new int[height][width];
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalizedPixels[bandNum] = bandPixels;
+    }
+    return normalizedPixels;
+  }
+
+  private static double[][][] normalizeNonInterleavedPixelsToDouble(final double[][][] pixels) {
+    final double[][][] normalizedPixels = new double[pixels.length][][];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int height = pixels[bandNum].length;
+      final int width = pixels[bandNum][0].length;
+      final double[][] bandPixels = new double[height][width];
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalizedPixels[bandNum] = bandPixels;
+    }
+    return normalizedPixels;
+  }
+
+  // You can store the normalized pixel in any structure with this implementation.
+  private static void normalize(final double[][] band, final PixelStore pixelStore) {
+    final double[] minAndMax = ArrayUtils.minAndMax(band);
+    final double min = minAndMax[0];
+    final double max = minAndMax[1];
+    final double m = DEFAULT_MAX_PIXEL_VALUE / (max - min);
+    final double b = -m * min;
+
+    for (int y = 0; y < band.length; y++) {
+      for (int x = 0; x < band[y].length; x++) {
+        pixelStore.store((int) (m * band[y][x] + b), x, y);
+      }
+    }
+  }
+
+  // ========================= \Normalizers ========================= //
 }

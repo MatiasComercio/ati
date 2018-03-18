@@ -1,18 +1,19 @@
 package ar.edu.itba.ati.idp.model;
 
-import static ar.edu.itba.ati.idp.model.ImageFiles.getFileExtension;
-
+import ar.edu.itba.ati.idp.io.ImageIO;
 import java.io.File;
 import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class ImageFile {
-  protected File file;
-  protected final ImageMatrix imageMatrix;
+  private final ImageMatrix imageMatrix;
+  private final ImageIO imageIO;
 
-  public ImageFile(final File file, final ImageMatrix imageMatrix) {
+  private File file;
+
+  public ImageFile(final File file, final ImageMatrix imageMatrix, final ImageIO imageIO) {
     this.file = file;
     this.imageMatrix = imageMatrix;
+    this.imageIO = imageIO;
   }
 
   public File getFile() {
@@ -23,13 +24,12 @@ public class ImageFile {
     return imageMatrix;
   }
 
-  public void saveToFile() throws IOException {
-    // TODO: implement different strategies depending on the type of the original file
-    ImageIO.write(imageMatrix.toBufferedImage(), getFileExtension(file), file);
+  public void save() throws IOException {
+    imageIO.save(this);
   }
 
-  public void saveToFile(final File newFile) throws IOException {
+  public void saveAs(final File newFile) throws IOException {
     this.file = newFile;
-    saveToFile();
+    save();
   }
 }

@@ -294,6 +294,10 @@ public class ResizableRectangle extends Rectangle {
         final double offsetX = event.getX() - rectangle.getX();
         final double offsetY = event.getY() - rectangle.getY();
 
+        // TODO: I think all this code with validation can be simply resumed
+        //  as the Clap function of unity when setting the width/height/x/y position.
+        //  Not doing it now, as it is not a priority, but this may be done later on.
+        // This may even apply for the SelectableAreaImageView TODO comments
         if (isValidResizedWidth(rectangle, offsetX)) {
           rectangle.setWidth(offsetX);
         }

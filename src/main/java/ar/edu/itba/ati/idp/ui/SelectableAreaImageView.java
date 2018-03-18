@@ -43,11 +43,13 @@ public class SelectableAreaImageView extends Group {
         return;
       }
 
+      // If there is a click and there are any rectangles => clear selection
       if (selectionRectangle != null || outsideSelectionRectangles != null) {
         clearSelection();
         return;
       }
 
+      // Else, create all rectangles with the current click/mouse position
       rectangleStartX = event.getX();
       rectangleStartY = event.getY();
 
@@ -67,20 +69,25 @@ public class SelectableAreaImageView extends Group {
         return;
       }
 
+      // This may happen is mouse is clicked outside this element's scope and dragged in while pressed
       if (selectionRectangle == null || outsideSelectionRectangles == null) {
         return;
       }
 
+      // Note that the mouse should be still pressed
+      // (initial pressed event handled by the previous event handler) to reach here correctly
       final double offsetX = event.getX() - rectangleStartX;
       final double offsetY = event.getY() - rectangleStartY;
 
       if (offsetX > 0) {
+        // TODO: set with Math.min(offset, imageView.getImage().getWidth() - rectangleStartX)
         if (event.getX() > imageView.getImage().getWidth()) {
           selectionRectangle.setWidth(imageView.getImage().getWidth() - rectangleStartX);
         } else {
           selectionRectangle.setWidth(offsetX);
         }
       } else {
+        // TODO: set with Math.max(0, event.getX())
         if (event.getX() < 0) {
           selectionRectangle.setX(0);
         } else {
@@ -90,6 +97,7 @@ public class SelectableAreaImageView extends Group {
         selectionRectangle.setWidth(rectangleStartX - selectionRectangle.getX());
       }
 
+      // TODO: same as before
       if (offsetY > 0) {
         if (event.getY() > imageView.getImage().getHeight()) {
           selectionRectangle
@@ -123,6 +131,26 @@ public class SelectableAreaImageView extends Group {
     outsideSelectionRectangles = null;
   }
 
+  /**
+   * <pre>
+   * -------------------------
+   * |          top          |
+   * |_______________________|
+   * | left |rectangle| right|
+   * |______|_________|______|
+   * |         bottom        |
+   * -------------------------
+   *
+   * The ImageView is the outer rectangle.
+   * The inner rectangle is the one given as argument.
+   * top, left, right, bottom rectangles are the "outside selection rectangles" returned.
+   *
+   * All outside rectangles have their sizes bound
+   *   (i.e., changing dynamically according) to the selection rectangle size.
+   *
+   * These outside rectangles are also attached the mouse event handlers
+   * </pre>
+   */
   private Collection<Rectangle> buildOutsideSelectionRectangles(final Rectangle rectangle) {
     final Rectangle darkAreaTop = new Rectangle(0, 0, OUTSIDE_SELECTION_COLOR);
     final Rectangle darkAreaLeft = new Rectangle(0, 0, OUTSIDE_SELECTION_COLOR);
@@ -167,6 +195,7 @@ public class SelectableAreaImageView extends Group {
   }
 
   public void disableSelection() {
+    clearSelection();
     removeSelectionMouseHandlers(imageView);
   }
 
