@@ -2,7 +2,9 @@
 
 <?import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController?>
 <?import ar.edu.itba.ati.idp.ui.controller.menu.FileMenuController?>
+<?import ar.edu.itba.ati.idp.ui.controller.menu.HistogramMenuController?>
 <fx:root type="MenuBarController" xmlns:fx="http://javafx.com/fxml">
   <FileMenuController fx:id="fileMenu"/>
+  <HistogramMenuController fx:id="histogramMenu"/>
 </fx:root>
 

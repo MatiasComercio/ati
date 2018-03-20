@@ -2,6 +2,7 @@ package ar.edu.itba.ati.idp.io;
 
 import ar.edu.itba.ati.idp.model.ImageFile;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
   private static final Set<String> SUPPORTED_EXTENSIONS;
   private static final String NO_ASSOCIATED_HEADER_FILE_ERROR_MSG =
       "HEADER file for RAW image `{}` was not found (expected: `{}`)";
+  private static final String ERROR_WHILE_SCANNING_FILE_MSG =
+      "Error while scanning file: {}. Aborting...";
 
   static {
     final Set<String> supportedExtensions = new HashSet<>();
@@ -54,9 +57,18 @@ import org.slf4j.LoggerFactory;
       return null;
     }
     // header file should have: width height
-    final Scanner scanner = new Scanner(Files.newInputStream(headerFile.toPath()));
-    final int width = scanner.nextInt();
-    final int height = scanner.nextInt();
+    final Scanner scanner = new Scanner(
+        new BufferedInputStream(Files.newInputStream(headerFile.toPath()))
+    );
+    final int width;
+    final int height;
+    try {
+      width = scanner.nextInt();
+      height = scanner.nextInt();
+    } catch (final Exception e) {
+      LOGGER.error(ERROR_WHILE_SCANNING_FILE_MSG, headerFile, e);
+      throw new IOException(e);
+    }
 
     final InputStream inputStream = Files.newInputStream(rawFile.toPath());
 

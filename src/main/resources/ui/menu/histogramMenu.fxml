@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.HistogramMenuController?>
+<?import javafx.scene.control.MenuItem?>
+
+<fx:root mnemonicParsing="false" text="Histogram" type="ar.edu.itba.ati.idp.ui.controller.menu.HistogramMenuController" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
+  <MenuItem mnemonicParsing="false" onAction="#handleShow" text="Show" />
+</fx:root>

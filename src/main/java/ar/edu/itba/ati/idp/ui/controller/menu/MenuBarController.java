@@ -18,11 +18,15 @@ public class MenuBarController extends MenuBar {
   @FXML
   private FileMenuController fileMenu;
 
+  @FXML
+  private HistogramMenuController histogramMenu;
+
   public MenuBarController() {
     ResourceLoader.INSTANCE.loadCustomFxml(LAYOUT_PATH, this);
   }
 
   public void setWorkspace(final Workspace workspace) {
-    this.fileMenu.setWorkspace(workspace);
+    fileMenu.setWorkspace(workspace);
+    histogramMenu.setWorkspace(workspace);
   }
 }

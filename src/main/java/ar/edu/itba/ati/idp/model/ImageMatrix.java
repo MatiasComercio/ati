@@ -1,8 +1,19 @@
 package ar.edu.itba.ati.idp.model;
 
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.ALPHA;
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.BLACK_WHITE;
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.BLUE;
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREEN;
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREY;
+import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.RED;
+
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
+import ar.edu.itba.ati.idp.model.ImageHistogram.BandHistogram;
 import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
 public class ImageMatrix {
@@ -80,6 +91,19 @@ public class ImageMatrix {
     return DEFAULT_MAX_PIXEL_VALUE;
   }
 
+  public ImageHistogram getHistogram() {
+    final List<Band> bands = type.toBands();
+    final List<BandHistogram> bandHistograms = new LinkedList<>();
+    for (final Band band : bands) {
+      final int[] plainHistogram = new int[getMaxNormalizedPixelValue() + 1];
+      normalize(pixels[band.bandIndex], band.bandIndex,
+                (normalizedPixel, x, y, bandNum) -> plainHistogram[normalizedPixel] ++
+      );
+      bandHistograms.add(BandHistogram.from(band, plainHistogram));
+    }
+    return ImageHistogram.from(bandHistograms);
+  }
+
   public BufferedImage toBufferedImage() {
     final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
 
@@ -144,19 +168,41 @@ public class ImageMatrix {
   }
 
   public enum Type {
-    BYTE_B(1), BYTE_G(1), BYTE_RGB(3), BYTE_ARGB(4);
+    BYTE_B(1, BLACK_WHITE), BYTE_G(1, GREY),
+    BYTE_RGB(3, RED, GREEN, BLUE), BYTE_ARGB(4, RED, GREEN, BLUE, ALPHA);
 
     private final int numBands;
+    private final List<Band> bands;
 
-    Type(final int numBands) {
+    Type(final int numBands, final Band... bands) {
       this.numBands = numBands;
+      this.bands = Arrays.asList(bands);
+    }
+
+    public List<Band> toBands() {
+      return bands;
     }
   }
   
   // ========================= Normalizers ========================= //
 
   private interface PixelStore {
-    void store(int normalizedPixel, int x, int y);
+    void store(int normalizedPixel, int x, int y, int bandNum);
+  }
+
+  /**
+   * Iterate through all pixels per band (non-interleaved), normalizing each of them and calling
+   *  the given {@code pixelStore} per pixel.
+   * <p>
+   * Users may store/manipulate/do whatever they need to with each normalized pixel using
+   *  the built pixel store instance.
+   * @param pixelStore The pixel store instance that will be called per each normalized pixel
+   *                   (traversed in a non-interleaved manner).
+   */
+  public void normalize(final PixelStore pixelStore) {
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      normalize(pixels[bandNum], bandNum, pixelStore);
+    }
   }
 
   public int[][][] normalizePixelsToBytes() {
@@ -166,8 +212,7 @@ public class ImageMatrix {
   public int[][][] normalizePixelsToInterleavedBytes() {
     final int[][][] normalizedPixels = new int[height][width][type.numBands];
     for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
-      final int currentBandNum = bandNum;
-      normalize(pixels[bandNum], (normalizedPixel, x, y) -> normalizedPixels[y][x][currentBandNum] = normalizedPixel);
+      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> normalizedPixels[y][x][band] = normalizedPixel);
     }
     return normalizedPixels;
   }
@@ -178,7 +223,7 @@ public class ImageMatrix {
       final int height = pixels[bandNum].length;
       final int width = pixels[bandNum][0].length;
       final int[][] bandPixels = new int[height][width];
-      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> bandPixels[y][x] = normalizedPixel);
       normalizedPixels[bandNum] = bandPixels;
     }
     return normalizedPixels;
@@ -190,14 +235,14 @@ public class ImageMatrix {
       final int height = pixels[bandNum].length;
       final int width = pixels[bandNum][0].length;
       final double[][] bandPixels = new double[height][width];
-      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> bandPixels[y][x] = normalizedPixel);
       normalizedPixels[bandNum] = bandPixels;
     }
     return normalizedPixels;
   }
 
   // You can store the normalized pixel in any structure with this implementation.
-  private static void normalize(final double[][] band, final PixelStore pixelStore) {
+  private static void normalize(final double[][] band, int bandNum, final PixelStore pixelStore) {
     final double[] minAndMax = ArrayUtils.minAndMax(band);
     final double min = minAndMax[0];
     final double max = minAndMax[1];
@@ -206,10 +251,40 @@ public class ImageMatrix {
 
     for (int y = 0; y < band.length; y++) {
       for (int x = 0; x < band[y].length; x++) {
-        pixelStore.store((int) (m * band[y][x] + b), x, y);
+        pixelStore.store((int) (m * band[y][x] + b), x, y, bandNum);
       }
     }
   }
 
   // ========================= \Normalizers ========================= //
+
+  // ========================= Bands ========================= //
+  public enum Band {
+    BLACK_WHITE(0, "Black & White", "#000000"),
+    GREY(0, "Grey", "#808080"),
+    RED(0, "Red", "#FF0000"),
+    GREEN(1, "Green", "#00FF00"),
+    BLUE(2, "Blue", "#0000FF"),
+    ALPHA(3, "Alpha", "#D3D3D3");
+
+    private final int bandIndex;
+    private final String name;
+    private final String hexColor;
+
+    Band(final int bandIndex, final String name, final String hexColor) {
+      this.bandIndex = bandIndex;
+      this.name = name;
+      this.hexColor = hexColor;
+    }
+
+    public String getHexColor() {
+      return hexColor;
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+  // ========================= \Bands ========================= //
 }

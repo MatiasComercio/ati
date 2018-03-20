@@ -155,4 +155,12 @@ public class Workspace {
   private void updateWorkspaceTitle() {
     stage.setTitle(imageFile == null ? DEFAULT_WORKSPACE_NAME : imageFile.getFile().getName());
   }
+
+  public boolean isImageLoaded() {
+    return imageFile != null;
+  }
+
+  public ImageFile getImageFile() {
+    return imageFile;
+  }
 }
