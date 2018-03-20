@@ -4,6 +4,7 @@ import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 import ar.edu.itba.ati.idp.io.ImageLoader;
 import ar.edu.itba.ati.idp.model.ImageFile;
+import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
 import java.io.File;
 import java.io.IOException;

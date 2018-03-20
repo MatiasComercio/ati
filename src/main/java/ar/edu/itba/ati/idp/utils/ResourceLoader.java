@@ -33,7 +33,7 @@ public enum ResourceLoader {
    * @param customFxmlElement The custom element to be set
    *                          as root & controller of the loaded layout.
    */
-  public void loadCustomFxml(final String fxmlFilePath, final Parent customFxmlElement) {
+  public void loadCustomFxml(final String fxmlFilePath, final Object customFxmlElement) {
     final FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.INSTANCE.load(fxmlFilePath));
     fxmlLoader.setRoot(customFxmlElement);
     fxmlLoader.setController(customFxmlElement);
