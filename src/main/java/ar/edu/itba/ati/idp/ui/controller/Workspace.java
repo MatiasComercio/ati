@@ -2,6 +2,7 @@ package ar.edu.itba.ati.idp.ui.controller;
 
 import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
+import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.io.ImageLoader;
 import ar.edu.itba.ati.idp.model.ImageFile;
 import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController;
@@ -109,7 +110,7 @@ public class Workspace {
   private void loadImage(final ImageFile imageFile) {
     // Load the new image
     this.imageFile = imageFile;
-    this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImage(), null));
+    renderImage();
     // Set the image pane in the stage's main pane
     this.mainPane.setCenter(imagePane);
     updateWorkspaceTitle();
@@ -162,5 +163,15 @@ public class Workspace {
 
   public ImageFile getImageFile() {
     return imageFile;
+  }
+
+  public ImageFile applyToImage(final DoubleArray2DUnaryOperator function) {
+    imageFile.apply(function);
+    renderImage();
+    return imageFile;
+  }
+
+  private void renderImage() {
+    this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImage(), null));
   }
 }

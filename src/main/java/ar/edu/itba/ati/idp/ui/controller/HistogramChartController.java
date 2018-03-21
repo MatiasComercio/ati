@@ -18,11 +18,11 @@ import javafx.stage.StageStyle;
 public class HistogramChartController extends VBox {
   private static final String STAGE_TITLE = "Histogram";
   private static final int STAGE_PREF_WIDTH = 300;
-  private static final int CHART_PREF_WIDTH = STAGE_PREF_WIDTH;
-  private static final int CHART_PREF_HEIGHT = 200;
+  private static final int CHART_PREF_WIDTH = 200;
+  private static final int CHART_PREF_HEIGHT = 225;
   private static final int NO_GAP = 0;
-  private static final String X_AXIS_LABEL = "Pixel Value";
-  private static final String Y_AXIS_LABEL = "# Pixels";
+//  private static final String X_AXIS_LABEL = "Pixel Value";
+//  private static final String Y_AXIS_LABEL = "# Pixels";
   private static final String BAR_COLOR_PROPERTY = "-fx-bar-fill: %s;";
 
   private Stage stage;
@@ -31,7 +31,7 @@ public class HistogramChartController extends VBox {
     setAlignment(Pos.CENTER);
     stage = new Stage(StageStyle.UTILITY);
     stage.setScene(new Scene(this));
-    stage.setWidth(CHART_PREF_WIDTH);
+    stage.setWidth(STAGE_PREF_WIDTH);
     stage.setOnCloseRequest(windowEvent -> clearHistogramCharts());
   }
 
@@ -54,8 +54,9 @@ public class HistogramChartController extends VBox {
     histogramChart.setCategoryGap(NO_GAP);
     histogramChart.setLegendVisible(false);
     histogramChart.setPrefSize(CHART_PREF_WIDTH, CHART_PREF_HEIGHT);
-    xAxis.setLabel(X_AXIS_LABEL);
-    yAxis.setLabel(Y_AXIS_LABEL);
+//    xAxis.setLabel(X_AXIS_LABEL);
+//    yAxis.setLabel(Y_AXIS_LABEL);
+    yAxis.setForceZeroInRange(true);
     // Build histogram data series
     final Series<String, Number> series = new Series<>();
     final Band band = bandHistogram.getBand();

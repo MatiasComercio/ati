@@ -5,14 +5,14 @@ import java.util.Objects;
 @FunctionalInterface
 public interface DoubleArray2DUnaryOperator {
 
-  double[][] apply(final double[][] m);
+  double[][] apply(double[][] m);
 
-  default DoubleArray2DUnaryOperator compose(final DoubleArray2DUnaryOperator before) {
+  default DoubleArray2DUnaryOperator compose(DoubleArray2DUnaryOperator before) {
     Objects.requireNonNull(before);
     return (m) -> apply(before.apply(m));
   }
 
-  default DoubleArray2DUnaryOperator andThen(final DoubleArray2DUnaryOperator after) {
+  default DoubleArray2DUnaryOperator andThen(DoubleArray2DUnaryOperator after) {
     Objects.requireNonNull(after);
     return (m) -> after.apply(apply(m));
   }

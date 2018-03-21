@@ -87,17 +87,18 @@ public class ImageMatrix {
     return height;
   }
 
-  public int getMaxNormalizedPixelValue() {
+  public static int getMaxNormalizedPixelValue() {
     return DEFAULT_MAX_PIXEL_VALUE;
   }
 
+  // TODO: these functions may be migrated to `apply` logic
   public ImageHistogram getHistogram() {
     final List<Band> bands = type.toBands();
     final List<BandHistogram> bandHistograms = new LinkedList<>();
     for (final Band band : bands) {
       final int[] plainHistogram = new int[getMaxNormalizedPixelValue() + 1];
-      normalize(pixels[band.bandIndex], band.bandIndex,
-                (normalizedPixel, x, y, bandNum) -> plainHistogram[normalizedPixel] ++
+      normalize(pixels[band.bandIndex],
+                (normalizedPixel, x, y) -> plainHistogram[normalizedPixel] ++
       );
       bandHistograms.add(BandHistogram.from(band, plainHistogram));
     }
@@ -135,21 +136,22 @@ public class ImageMatrix {
     }
   }
 
+  // ========================= Apply ========================= //
   public ImageMatrix apply(final DoubleArray2DUnaryOperator function) {
-    final double[][][] newPixels = new double[type.numBands][][];
+    final double[][][] newPixels = new double[pixels.length][][];
 
-    for (int b = 0; b < type.numBands; b++) {
-      newPixels[b] = function.apply(ArrayUtils.copyOf(pixels[b]));
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      newPixels[bandNum] = function.apply(ArrayUtils.copyOf(pixels[bandNum]));
     }
 
     return new ImageMatrix(newPixels, type);
   }
 
   public ImageMatrix apply(final DoubleUnaryOperator function) {
-    final double[][][] newPixels = new double[type.numBands][][];
+    final double[][][] newPixels = new double[pixels.length][][];
 
-    for (int b = 0; b < type.numBands; b++) {
-      newPixels[b] = apply(pixels[b], function);
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      newPixels[bandNum] = apply(pixels[bandNum], function);
     }
 
     return ImageMatrix.fromNonInterleavedPixels(newPixels);
@@ -166,7 +168,84 @@ public class ImageMatrix {
 
     return newPixels;
   }
+  // ========================= \Apply ========================= //
 
+  // ========================= Normalizers ========================= //
+
+  public interface PixelVisitor {
+    void visit(int normalizedPixel, int x, int y);
+  }
+
+  /**
+   * Iterate through all pixels per band (non-interleaved), normalizing each of them and calling
+   *  the given {@code pixelStore} per pixel.
+   * <p>
+   * Users may visit/manipulate/do whatever they need to with each normalized pixel using
+   *  the built pixel visit instance.
+   * @param pixelStore The pixel visit instance that will be called per each normalized pixel
+   *                   (traversed in a non-interleaved manner).
+   */
+  public void normalize(final PixelVisitor pixelStore) {
+    for (final double[][] pixel : pixels) {
+      normalize(pixel, pixelStore);
+    }
+  }
+
+  public int[][][] normalizePixelsToBytes() {
+    return normalizeNonInterleavedPixelsToBytes(pixels);
+  }
+
+  public int[][][] normalizePixelsToInterleavedBytes() {
+    final int[][][] normalizedPixels = new int[height][width][type.numBands];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int band = bandNum;
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> normalizedPixels[y][x][band] = normalizedPixel);
+    }
+    return normalizedPixels;
+  }
+
+  // You can visit the normalized pixel in any structure with this implementation.
+  public static void normalize(final double[][] pixelsBand, final PixelVisitor pixelStore) {
+    final double[] minAndMax = ArrayUtils.minAndMax(pixelsBand);
+    final double min = minAndMax[0];
+    final double max = minAndMax[1];
+    final double m = DEFAULT_MAX_PIXEL_VALUE / (max - min);
+    final double b = -m * min;
+
+    for (int y = 0; y < pixelsBand.length; y++) {
+      for (int x = 0; x < pixelsBand[y].length; x++) {
+        pixelStore.visit((int) (m * pixelsBand[y][x] + b), x, y);
+      }
+    }
+  }
+
+  private static int[][][] normalizeNonInterleavedPixelsToBytes(final double[][][] pixels) {
+    final int[][][] normalizedPixels = new int[pixels.length][][];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int height = pixels[bandNum].length;
+      final int width = pixels[bandNum][0].length;
+      final int[][] bandPixels = new int[height][width];
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalizedPixels[bandNum] = bandPixels;
+    }
+    return normalizedPixels;
+  }
+
+  private static double[][][] normalizeNonInterleavedPixelsToDouble(final double[][][] pixels) {
+    final double[][][] normalizedPixels = new double[pixels.length][][];
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      final int height = pixels[bandNum].length;
+      final int width = pixels[bandNum][0].length;
+      final double[][] bandPixels = new double[height][width];
+      normalize(pixels[bandNum], (normalizedPixel, x, y) -> bandPixels[y][x] = normalizedPixel);
+      normalizedPixels[bandNum] = bandPixels;
+    }
+    return normalizedPixels;
+  }
+
+  // ========================= \Normalizers ========================= //
+
+  // ========================= Type ========================= //
   public enum Type {
     BYTE_B(1, BLACK_WHITE), BYTE_G(1, GREY),
     BYTE_RGB(3, RED, GREEN, BLUE), BYTE_ARGB(4, RED, GREEN, BLUE, ALPHA);
@@ -183,80 +262,7 @@ public class ImageMatrix {
       return bands;
     }
   }
-  
-  // ========================= Normalizers ========================= //
-
-  private interface PixelStore {
-    void store(int normalizedPixel, int x, int y, int bandNum);
-  }
-
-  /**
-   * Iterate through all pixels per band (non-interleaved), normalizing each of them and calling
-   *  the given {@code pixelStore} per pixel.
-   * <p>
-   * Users may store/manipulate/do whatever they need to with each normalized pixel using
-   *  the built pixel store instance.
-   * @param pixelStore The pixel store instance that will be called per each normalized pixel
-   *                   (traversed in a non-interleaved manner).
-   */
-  public void normalize(final PixelStore pixelStore) {
-    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
-      normalize(pixels[bandNum], bandNum, pixelStore);
-    }
-  }
-
-  public int[][][] normalizePixelsToBytes() {
-    return normalizeNonInterleavedPixelsToBytes(pixels);
-  }
-
-  public int[][][] normalizePixelsToInterleavedBytes() {
-    final int[][][] normalizedPixels = new int[height][width][type.numBands];
-    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
-      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> normalizedPixels[y][x][band] = normalizedPixel);
-    }
-    return normalizedPixels;
-  }
-
-  private static int[][][] normalizeNonInterleavedPixelsToBytes(final double[][][] pixels) {
-    final int[][][] normalizedPixels = new int[pixels.length][][];
-    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
-      final int height = pixels[bandNum].length;
-      final int width = pixels[bandNum][0].length;
-      final int[][] bandPixels = new int[height][width];
-      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> bandPixels[y][x] = normalizedPixel);
-      normalizedPixels[bandNum] = bandPixels;
-    }
-    return normalizedPixels;
-  }
-
-  private static double[][][] normalizeNonInterleavedPixelsToDouble(final double[][][] pixels) {
-    final double[][][] normalizedPixels = new double[pixels.length][][];
-    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
-      final int height = pixels[bandNum].length;
-      final int width = pixels[bandNum][0].length;
-      final double[][] bandPixels = new double[height][width];
-      normalize(pixels[bandNum], bandNum, (normalizedPixel, x, y, band) -> bandPixels[y][x] = normalizedPixel);
-      normalizedPixels[bandNum] = bandPixels;
-    }
-    return normalizedPixels;
-  }
-
-  // You can store the normalized pixel in any structure with this implementation.
-  private static void normalize(final double[][] band, int bandNum, final PixelStore pixelStore) {
-    final double[] minAndMax = ArrayUtils.minAndMax(band);
-    final double min = minAndMax[0];
-    final double max = minAndMax[1];
-    final double m = DEFAULT_MAX_PIXEL_VALUE / (max - min);
-    final double b = -m * min;
-
-    for (int y = 0; y < band.length; y++) {
-      for (int x = 0; x < band[y].length; x++) {
-        pixelStore.store((int) (m * band[y][x] + b), x, y, bandNum);
-      }
-    }
-  }
-
-  // ========================= \Normalizers ========================= //
+  // ========================= \Type ========================= //
 
   // ========================= Bands ========================= //
   public enum Band {

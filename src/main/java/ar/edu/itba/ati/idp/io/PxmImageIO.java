@@ -113,7 +113,7 @@ import org.slf4j.LoggerFactory;
       stream.print(' ');
       stream.print(String.valueOf(imageMatrix.getHeight()));
       stream.println();
-      stream.print(String.valueOf(imageMatrix.getMaxNormalizedPixelValue()));
+      stream.print(String.valueOf(ImageMatrix.getMaxNormalizedPixelValue()));
       stream.println();
       // Write image data
       final int[][][] pixels = imageMatrix.normalizePixelsToInterleavedBytes();

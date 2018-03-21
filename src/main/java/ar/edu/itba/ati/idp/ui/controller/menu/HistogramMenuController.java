@@ -1,5 +1,7 @@
 package ar.edu.itba.ati.idp.ui.controller.menu;
 
+import ar.edu.itba.ati.idp.function.HistogramEqualization;
+import ar.edu.itba.ati.idp.model.ImageFile;
 import ar.edu.itba.ati.idp.model.ImageHistogram;
 import ar.edu.itba.ati.idp.ui.controller.HistogramChartController;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
@@ -26,7 +28,17 @@ public class HistogramMenuController extends Menu {
   @FXML
   public void handleShow() {
     if (!workspace.isImageLoaded()) return;
-    final ImageHistogram imageHistogram = workspace.getImageFile().getImageMatrix().getHistogram();
+    internalHandleShow(workspace.getImageFile());
+  }
+
+  @FXML
+  public void handleEqualize() {
+    if (!workspace.isImageLoaded()) return;
+    workspace.applyToImage(HistogramEqualization.INSTANCE);
+  }
+
+  private void internalHandleShow(final ImageFile imageFile) {
+    final ImageHistogram imageHistogram = imageFile.getImageMatrix().getHistogram();
     final String imageName = workspace.getImageFile().getFile().getName();
     histogramChartController.show(imageHistogram, imageName);
   }
