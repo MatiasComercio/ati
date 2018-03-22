@@ -46,4 +46,8 @@ public class OpenFileChooser {
       workspace.loadImages(files);
     }
   }
+
+  public List<File> chooseToLoadManually(final Workspace workspace) {
+    return fileChooser.showOpenMultipleDialog(workspace.getStage());
+  }
 }

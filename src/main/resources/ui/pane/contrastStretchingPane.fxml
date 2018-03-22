@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.pane.ContrastStretchingPaneController"
+  xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121" alignment="CENTER"
+  spacing="10.0">
+  <padding>
+    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+  </padding>
+  <HBox alignment="CENTER" spacing="15.0">
+    <VBox.margin>
+      <Insets/>
+    </VBox.margin>
+    <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="10.0">
+      <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+        minWidth="-Infinity" text="R1"/>
+      <TextField fx:id="r1TextField" alignment="CENTER" maxHeight="-Infinity"
+        maxWidth="-Infinity"
+        minHeight="-Infinity" minWidth="-Infinity" prefWidth="100.0" promptText="1.0"/>
+    </VBox>
+    <Separator orientation="VERTICAL"/>
+    <VBox alignment="CENTER" layoutX="70.0" layoutY="10.0" spacing="10.0">
+      <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+        minWidth="-Infinity" text="R2"/>
+      <TextField fx:id="r2TextField" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
+        minHeight="-Infinity" minWidth="-Infinity" prefWidth="100.0" promptText="1.0"/>
+    </VBox>
+  </HBox>
+  <Button fx:id="applyButton" disable="true" mnemonicParsing="false" prefWidth="100.0"
+    text="Apply" onAction="#handleApply">
+    <ar.edu.itba.ati.idp.ui.controller.pane.ContrastStretchingPaneController.margin>
+      <Insets top="10.0"/>
+    </ar.edu.itba.ati.idp.ui.controller.pane.ContrastStretchingPaneController.margin>
+  </Button>
+</fx:root>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.pane.noise.ExponentialTabController?>
+<?import ar.edu.itba.ati.idp.ui.controller.pane.noise.NoiseTabPaneController?>
+<?import ar.edu.itba.ati.idp.ui.controller.pane.noise.RayleighTabController?>
+<?import ar.edu.itba.ati.idp.ui.controller.pane.noise.GaussianTabController?>
+<?import ar.edu.itba.ati.idp.ui.controller.pane.noise.SaltAndPepperTabController?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.pane.noise.NoiseTabPaneController"
+  tabClosingPolicy="UNAVAILABLE" xmlns:fx="http://javafx.com/fxml">
+  <ExponentialTabController fx:id="exponentialTab"/>
+  <RayleighTabController fx:id="rayleighTab"/>
+  <GaussianTabController fx:id="gaussianTab"/>
+  <SaltAndPepperTabController fx:id="saltAndPepperTab"/>
+</fx:root>

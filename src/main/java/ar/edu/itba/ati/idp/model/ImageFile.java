@@ -37,4 +37,8 @@ public class ImageFile {
   public void apply(final DoubleArray2DUnaryOperator function) {
     imageMatrix = imageMatrix.apply(function);
   }
+
+  public void setImageMatrix(final ImageMatrix newImageMatrix) {
+    imageMatrix = newImageMatrix;
+  }
 }

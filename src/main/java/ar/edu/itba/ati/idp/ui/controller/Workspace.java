@@ -5,6 +5,7 @@ import static javafx.embed.swing.SwingFXUtils.toFXImage;
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.io.ImageLoader;
 import ar.edu.itba.ati.idp.model.ImageFile;
+import ar.edu.itba.ati.idp.model.ImageMatrix;
 import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
 import java.io.File;
@@ -169,6 +170,12 @@ public class Workspace {
     imageFile.apply(function);
     renderImage();
     return imageFile;
+  }
+
+  // TODO: Think if there is other way to do this
+  public void updateImage(final ImageMatrix imageMatrix) {
+    imageFile.setImageMatrix(imageMatrix);
+    renderImage();
   }
 
   private void renderImage() {

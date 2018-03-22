@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.EditMenuController?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.EditMenuController"
+  xmlns:fx="http://javafx.com/fxml" mnemonicParsing="false" text="Edit">
+  <MenuItem onAction="#handleNegative" mnemonicParsing="false" text="Negative"/>
+  <MenuItem onAction="#handleDynamicRangeCompression" mnemonicParsing="false"
+    text="Dynamic Range Compression"/>
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleImageAdd" mnemonicParsing="false" text="Add Image..."/>
+  <MenuItem onAction="#handleImageSubtract" mnemonicParsing="false" text="Subtract Image..."/>
+  <MenuItem onAction="#handleImageMultiply" mnemonicParsing="false" text="Multiply Image..."/>
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleScalarMultiplication" mnemonicParsing="false"
+    text="Scalar Multiplication..."/>
+  <MenuItem onAction="#handleGammaCorrection" mnemonicParsing="false" text="Gamma Correction..."/>
+  <MenuItem onAction="#handleContrastStretching" mnemonicParsing="false"
+    text="Contrast Stretching..."/>
+  <MenuItem onAction="#handleThreshold" mnemonicParsing="false" text="Threshold..."/>
+  <MenuItem onAction="#handleNoise" mnemonicParsing="false" text="Noise..."/>
+</fx:root>

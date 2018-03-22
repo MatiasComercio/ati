@@ -19,6 +19,9 @@ public class MenuBarController extends MenuBar {
   private FileMenuController fileMenu;
 
   @FXML
+  private EditMenuController editMenu;
+
+  @FXML
   private HistogramMenuController histogramMenu;
 
   public MenuBarController() {
@@ -27,6 +30,7 @@ public class MenuBarController extends MenuBar {
 
   public void setWorkspace(final Workspace workspace) {
     fileMenu.setWorkspace(workspace);
+    editMenu.setWorkspace(workspace);
     histogramMenu.setWorkspace(workspace);
   }
 }

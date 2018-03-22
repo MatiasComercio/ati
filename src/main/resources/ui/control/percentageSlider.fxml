@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.PercentageSliderController?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.PercentageSliderController"
+  xmlns:fx="http://javafx.com/fxml/1" alignment="CENTER" spacing="10.0">
+  <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+    minWidth="-Infinity" text="Percentage"/>
+  <Slider fx:id="slider" blockIncrement="1.0" value="100.0"/>
+  <Label fx:id="sliderText" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
+    minHeight="-Infinity" minWidth="-Infinity" prefWidth="25.0" text="100"/>
+</fx:root>

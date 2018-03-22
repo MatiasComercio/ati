@@ -14,12 +14,16 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 
 public class ImageMatrix {
+
   private static final int DEFAULT_MAX_PIXEL_VALUE = 255;
 
-  /** Non-Interleaved pixels */
+  /**
+   * Non-Interleaved pixels
+   */
   private final double[][][] pixels;
   private final int width;
   private final int height;
@@ -54,10 +58,17 @@ public class ImageMatrix {
     final Type type;
 
     switch (pixels.length) { // All breaking cases here will lately derived into illegal states too
-      case 1: type = Type.BYTE_G; break;
-      case 3: type = Type.BYTE_RGB; break;
-      case 4: type = Type.BYTE_ARGB; break;
-      default: throw new IllegalStateException("Unsupported band size");
+      case 1:
+        type = Type.BYTE_G;
+        break;
+      case 3:
+        type = Type.BYTE_RGB;
+        break;
+      case 4:
+        type = Type.BYTE_ARGB;
+        break;
+      default:
+        throw new IllegalStateException("Unsupported band size");
     }
     return new ImageMatrix(normalizeNonInterleavedPixelsToDouble(pixels), type);
   }
@@ -137,6 +148,40 @@ public class ImageMatrix {
   }
 
   // ========================= Apply ========================= //
+  public ImageMatrix add(final ImageMatrix other) {
+    return apply((t, o) -> t + o, other);
+  }
+
+  public ImageMatrix subtract(final ImageMatrix other) {
+    return apply((t, o) -> t - o, other);
+  }
+
+  public ImageMatrix multiply(final ImageMatrix other) {
+    return apply((t, o) -> t * o, other);
+  }
+
+  private ImageMatrix apply(final DoubleBinaryOperator f, final ImageMatrix other) {
+    if (other.type.numBands != this.type.numBands) {
+      throw new IllegalArgumentException("Incompatible images");
+    }
+
+    final double[][][] newMatrix = new double[type.numBands][height][width];
+
+    for (int b = 0; b < type.numBands; b++) {
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          if (y < other.height && x < other.width) {
+            newMatrix[b][y][x] = f.applyAsDouble(pixels[b][y][x], other.pixels[b][y][x]);
+          } else {
+            newMatrix[b][y][x] = pixels[b][y][x];
+          }
+        }
+      }
+    }
+
+    return ImageMatrix.fromNonInterleavedPixels(newMatrix);
+  }
+
   public ImageMatrix apply(final DoubleArray2DUnaryOperator function) {
     final double[][][] newPixels = new double[pixels.length][][];
 
@@ -169,6 +214,27 @@ public class ImageMatrix {
     return newPixels;
   }
   // ========================= \Apply ========================= //
+
+  public double[] getAveragePixel(final int x0, final int y0, final int w, final int h) {
+    // TODO: Input validation
+    final double[] avg = new double[type.numBands];
+    int total = 0;
+
+    for (int y = y0; y < h; y++) {
+      for (int x = x0; x < w; x++) {
+        total++;
+        for (int b = 0; b < type.numBands; b++) {
+          avg[b] += pixels[b][y][x];
+        }
+      }
+    }
+
+    for (int b = 0; b < type.numBands; b++) {
+      avg[b] /= total;
+    }
+
+    return avg;
+  }
 
   // ========================= Normalizers ========================= //
 
