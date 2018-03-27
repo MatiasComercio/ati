@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.pane.filter.HighPassFilterController"
+  alignment="CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+  <padding>
+    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+  </padding>
+   <Label text="High Pass Filter">
+      <font>
+         <Font name="System Bold" size="13.0" />
+      </font>
+   </Label>
+  <HBox spacing="10.0">
+    <VBox alignment="CENTER" spacing="10.0">
+      <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+        minWidth="-Infinity" text="Width"/>
+      <TextField fx:id="widthField" alignment="CENTER" maxHeight="-Infinity"
+        maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="100.0"
+        promptText="3"/>
+    </VBox>
+    <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="10.0">
+      <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+        minWidth="-Infinity" text="Height"/>
+      <TextField fx:id="heightField" alignment="CENTER" maxHeight="-Infinity"
+        maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="100.0"
+        promptText="3"/>
+    </VBox>
+  </HBox>
+  <Button onAction="#handleApply" fx:id="applyButton" disable="true" mnemonicParsing="false" prefWidth="100.0" text="Apply"/>
+</fx:root>

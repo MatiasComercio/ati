@@ -10,8 +10,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SaltAndPepperTabController extends Tab {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SaltAndPepperTabController.class);
 
   private static final String LAYOUT_PATH = "ui/pane/noise/saltAndPepperTab.fxml";
 
@@ -64,6 +67,11 @@ public class SaltAndPepperTabController extends Tab {
       p0 = Double.parseDouble(p0TextField.getText());
       p1 = Double.parseDouble(p1TextField.getText());
     } catch (final NumberFormatException exception) {
+      return;
+    }
+
+    if (p0 < 0 || p0 > 1 || p1 < 0 || p1 > 1 || p0 >= p1) {
+      LOGGER.warn("Invalid probabilities: p0: {}, p1: {}. Skipping...", p0, p1);
       return;
     }
 

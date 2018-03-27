@@ -10,7 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
 
 public class HistogramMenuController extends Menu {
-  private static final String LAYOUT_PATH = "ui/menu/histogramMenu.fxml";
+  private static final String LAYOUT_PATH = "ui/menu/edit/histogramMenu.fxml";
 
   private Workspace workspace;
   private HistogramChartController histogramChartController;

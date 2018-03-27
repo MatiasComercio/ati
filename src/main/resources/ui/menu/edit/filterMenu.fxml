@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.FilterMenuController?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<fx:root mnemonicParsing="false" text="Filter" type="ar.edu.itba.ati.idp.ui.controller.menu.FilterMenuController" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
+  <MenuItem mnemonicParsing="false" onAction="#handleMediaFilter" text="Media Filter" />
+  <MenuItem mnemonicParsing="false" onAction="#handleGaussFilter" text="Gauss Filter" />
+  <MenuItem mnemonicParsing="false" onAction="#handleMedianFilter" text="Median Filter" />
+  <MenuItem mnemonicParsing="false" onAction="#handleWeightedMedianFilter" text="Weighted Median Filter" />
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem mnemonicParsing="false" onAction="#handleHighPassFilter" text="High Pass Filter" />
+</fx:root>

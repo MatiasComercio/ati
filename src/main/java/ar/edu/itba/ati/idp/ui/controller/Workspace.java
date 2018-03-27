@@ -12,10 +12,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -27,6 +32,11 @@ public class Workspace {
   private static final String DEFAULT_WORKSPACE_NAME = "ImgEditor";
   private static final double MIN_STAGE_WIDTH = 400;
   private static final double MIN_STAGE_HEIGHT = 300;
+  private static final KeyCombination UNDO_KEYS =
+      new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+  private static final KeyCombination REDO_KEYS =
+      new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+
 
   // Important! If the FXML element needs a reference to this workspace,
   // assign it in the #start method of this class
@@ -54,6 +64,9 @@ public class Workspace {
     this.stage.setMinWidth(MIN_STAGE_WIDTH);
     this.stage.setMinHeight(MIN_STAGE_HEIGHT);
 
+    this.stage.addEventFilter(KeyEvent.KEY_PRESSED, undoHandler());
+    this.stage.addEventFilter(KeyEvent.KEY_PRESSED, redoHandler());
+
     // Make the stage visible
     this.stage.show();
 
@@ -61,6 +74,29 @@ public class Workspace {
     this.mainMenuBar.setWorkspace(this);
     this.dropPane.setWorkspace(this);
     this.imagePane = new ImagePaneController();
+  }
+
+  // Thanks: https://stackoverflow.com/questions/25397742/javafx-keyboard-event-shortcut-key
+  private EventHandler<KeyEvent> undoHandler() {
+    return keyEvent -> {
+      if (UNDO_KEYS.match(keyEvent)) {
+        if (imageFile.undo()) {
+          renderImage();
+        }
+        keyEvent.consume(); // Stop passing the event to next node
+      }
+    };
+  }
+
+  private EventHandler<KeyEvent> redoHandler() {
+    return keyEvent -> {
+      if (REDO_KEYS.match(keyEvent)) {
+        if (imageFile.redo()) {
+          renderImage();
+        }
+        keyEvent.consume(); // Stop passing the event to next node
+      }
+    };
   }
 
 
@@ -178,6 +214,7 @@ public class Workspace {
     renderImage();
   }
 
+  // TODO: try to set a handler that, when the image file matrix is updated, the workspace re-renders the image
   private void renderImage() {
     this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImage(), null));
   }

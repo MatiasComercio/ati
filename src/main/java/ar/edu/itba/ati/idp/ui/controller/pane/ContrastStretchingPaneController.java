@@ -59,7 +59,7 @@ public class ContrastStretchingPaneController extends VBox {
   }
 
   public void show() {
-    if (workspace.isImageLoaded()) {
+    if (workspace.isImageLoaded()) { // TODO: this should be done in the caller of this `show` method
       stage.setTitle(STAGE_TITLE + " - " + workspace.getImageFile().getFile().getName());
       stage.show();
     }

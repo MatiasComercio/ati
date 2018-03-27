@@ -11,7 +11,7 @@ public class SaltAndPepperNoise implements DoubleUnaryOperator {
   private final double p1;
 
   public SaltAndPepperNoise(final double p0, final double p1) {
-    if (p0 >= p1 || p0 < 0 || p0 > 1 || p1 < 0 || p1 > 1) {
+    if (p0 < 0 || p0 > 1 || p1 < 0 || p1 > 1 || p0 >= p1) {
       throw new IllegalArgumentException("Invalid probabilities");
     }
 

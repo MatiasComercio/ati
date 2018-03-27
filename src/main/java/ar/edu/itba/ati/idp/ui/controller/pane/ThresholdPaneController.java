@@ -86,10 +86,6 @@ public class ThresholdPaneController extends VBox {
       return false;
     }
 
-    if (intValue < 0 || intValue > 255) {
-      return false;
-    }
-
-    return true;
+    return intValue >= 0 && intValue <= 255;
   }
 }

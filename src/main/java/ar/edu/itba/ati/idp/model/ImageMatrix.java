@@ -119,12 +119,12 @@ public class ImageMatrix {
   public BufferedImage toBufferedImage() {
     final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
 
-    // TODO: check if normalization should be performed
+    final int[][][] normalizedPixels = normalizeNonInterleavedPixelsToBytes(ArrayUtils.copyOf(pixels));
 
     for (int b = 0; b < type.numBands; b++) {
       for (int y = 0; y < bufferedImage.getHeight(); y++) {
         for (int x = 0; x < bufferedImage.getWidth(); x++) {
-          bufferedImage.getRaster().setSample(x, y, b, pixels[b][y][x]);
+          bufferedImage.getRaster().setSample(x, y, b, normalizedPixels[b][y][x]);
         }
       }
     }

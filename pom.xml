@@ -28,6 +28,7 @@
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <commons-io.version>2.6</commons-io.version>
     <org.apache.commons.commons-math3.version>3.6.1</org.apache.commons.commons-math3.version>
+    <junit.version>4.0</junit.version>
   </properties>
 
   <build>
@@ -120,6 +121,11 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
     </dependency>
     <!--^LOGGING^-->
   </dependencies>

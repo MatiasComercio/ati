@@ -20,7 +20,7 @@ import javafx.scene.control.Menu;
 
 public class EditMenuController extends Menu {
 
-  private static final String LAYOUT_PATH = "ui/menu/editMenu.fxml";
+  private static final String LAYOUT_PATH = "ui/menu/edit/editMenu.fxml";
 
   private final OpenFileChooser openFileChooser;
   private final NoiseTabPaneController noiseTabPaneController;
@@ -30,6 +30,12 @@ public class EditMenuController extends Menu {
   private final ContrastStretchingPaneController contrastStretchingPaneController;
   private final Negative negativeFunction;
   private final DynamicRangeCompression dynamicRangeCompressionFunction;
+
+  @FXML
+  private HistogramMenuController histogramMenu;
+
+  @FXML
+  private FilterMenuController filterMenu;
 
   private Workspace workspace;
 
@@ -53,6 +59,8 @@ public class EditMenuController extends Menu {
     this.thresholdPaneController.setWorkspace(workspace);
     this.gammaCorrectionPaneController.setWorkspace(workspace);
     this.contrastStretchingPaneController.setWorkspace(workspace);
+    this.histogramMenu.setWorkspace(workspace);
+    this.filterMenu.setWorkspace(workspace);
   }
 
   @FXML

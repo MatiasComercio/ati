@@ -3,6 +3,8 @@
 <?import ar.edu.itba.ati.idp.ui.controller.menu.EditMenuController?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import ar.edu.itba.ati.idp.ui.controller.menu.HistogramMenuController?>
+<?import ar.edu.itba.ati.idp.ui.controller.menu.FilterMenuController?>
 <fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.EditMenuController"
   xmlns:fx="http://javafx.com/fxml" mnemonicParsing="false" text="Edit">
   <MenuItem onAction="#handleNegative" mnemonicParsing="false" text="Negative"/>
@@ -22,4 +24,8 @@
     text="Contrast Stretching..."/>
   <MenuItem onAction="#handleThreshold" mnemonicParsing="false" text="Threshold..."/>
   <MenuItem onAction="#handleNoise" mnemonicParsing="false" text="Noise..."/>
+  <SeparatorMenuItem mnemonicParsing="false"/>
+  <HistogramMenuController fx:id="histogramMenu"/>
+  <SeparatorMenuItem mnemonicParsing="false"/>
+  <FilterMenuController fx:id="filterMenu"/>
 </fx:root>

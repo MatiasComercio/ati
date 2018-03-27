@@ -2,12 +2,10 @@
 
 <?import ar.edu.itba.ati.idp.ui.controller.menu.EditMenuController?>
 <?import ar.edu.itba.ati.idp.ui.controller.menu.FileMenuController?>
-<?import ar.edu.itba.ati.idp.ui.controller.menu.HistogramMenuController?>
 <?import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController?>
 <fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController"
   xmlns:fx="http://javafx.com/fxml">
   <FileMenuController fx:id="fileMenu"/>
   <EditMenuController fx:id="editMenu"/>
-  <HistogramMenuController fx:id="histogramMenu"/>
 </fx:root>
 
