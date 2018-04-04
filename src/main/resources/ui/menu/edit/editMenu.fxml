@@ -28,4 +28,6 @@
   <HistogramMenuController fx:id="histogramMenu"/>
   <SeparatorMenuItem mnemonicParsing="false"/>
   <FilterMenuController fx:id="filterMenu"/>
+  <SeparatorMenuItem mnemonicParsing="false"/>
+  <MenuItem onAction="#handleNormalize" mnemonicParsing="false" text="Normalize"/>
 </fx:root>

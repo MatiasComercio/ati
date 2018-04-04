@@ -3,6 +3,7 @@ package ar.edu.itba.ati.idp.ui.controller;
 import ar.edu.itba.ati.idp.model.ImageHistogram;
 import ar.edu.itba.ati.idp.model.ImageHistogram.BandHistogram;
 import ar.edu.itba.ati.idp.model.ImageMatrix.Band;
+import java.util.Map;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
@@ -60,10 +61,8 @@ public class HistogramChartController extends VBox {
     // Build histogram data series
     final Series<String, Number> series = new Series<>();
     final Band band = bandHistogram.getBand();
-    final int[] plainHistogram = bandHistogram.getPlainHistogram();
-    for (int pixelValue = 0; pixelValue < plainHistogram.length; pixelValue++) {
-      series.getData().add(new Data<>(String.valueOf(pixelValue), plainHistogram[pixelValue]));
-    }
+    final Map<Integer, Integer> plainHistogram = bandHistogram.getPlainHistogram();
+    plainHistogram.forEach((key, value) -> series.getData().add(new Data<>(String.valueOf(key), value)));
     histogramChart.getData().add(series);
     final String barStyle = String.format(BAR_COLOR_PROPERTY, band.getHexColor());
     series.getData().forEach(data -> data.getNode().setStyle(barStyle));

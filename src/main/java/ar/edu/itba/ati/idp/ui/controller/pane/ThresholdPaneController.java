@@ -2,11 +2,16 @@ package ar.edu.itba.ati.idp.ui.controller.pane;
 
 import ar.edu.itba.ati.idp.function.point.Threshold;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
+import ar.edu.itba.ati.idp.model.ImageMatrix.Band;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -17,7 +22,12 @@ public class ThresholdPaneController extends VBox {
   private static final String LAYOUT_PATH = "ui/pane/thresholdPane.fxml";
   private static final String STAGE_TITLE = "Threshold";
 
+  private static final String ALL_ITEM = "All";
+
   private final Stage stage;
+
+  @FXML
+  public ChoiceBox<String> bandChoiceBox;
 
   @FXML
   private TextField thresholdTextField;
@@ -26,6 +36,7 @@ public class ThresholdPaneController extends VBox {
   private Button applyButton;
 
   private Workspace workspace;
+  private Map<String, Band> bandMap;
 
   public ThresholdPaneController() {
     ResourceLoader.INSTANCE.loadCustomFxml(LAYOUT_PATH, this);
@@ -50,6 +61,13 @@ public class ThresholdPaneController extends VBox {
 
   public void show() {
     if (workspace.isImageLoaded()) {
+      bandMap = workspace.getImageFile().getImageMatrix().getType().toBands().stream()
+          .collect(Collectors.toMap(Band::toString, b -> b));
+
+      bandChoiceBox.setItems(FXCollections.observableArrayList(ALL_ITEM));
+      bandChoiceBox.getItems().addAll(bandMap.keySet());
+      bandChoiceBox.getSelectionModel().selectFirst();
+
       stage.setTitle(STAGE_TITLE + " - " + workspace.getImageFile().getFile().getName());
       stage.show();
     }
@@ -69,7 +87,13 @@ public class ThresholdPaneController extends VBox {
     }
 
     final ImageMatrix imageMatrix = workspace.getImageFile().getImageMatrix();
-    final ImageMatrix newImageMatrix = imageMatrix.apply(new Threshold(value));
+    final ImageMatrix newImageMatrix;
+    final String selectedItem = bandChoiceBox.getSelectionModel().getSelectedItem();
+    if (selectedItem.equals(ALL_ITEM)) {
+      newImageMatrix = imageMatrix.apply(new Threshold(value));
+    } else {
+      newImageMatrix = imageMatrix.apply(bandMap.get(selectedItem), new Threshold(value));
+    }
 
     workspace.updateImage(newImageMatrix);
   }

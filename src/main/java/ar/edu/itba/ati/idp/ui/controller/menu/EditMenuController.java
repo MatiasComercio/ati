@@ -1,5 +1,6 @@
 package ar.edu.itba.ati.idp.ui.controller.menu;
 
+import ar.edu.itba.ati.idp.function.Normalizer;
 import ar.edu.itba.ati.idp.function.point.DynamicRangeCompression;
 import ar.edu.itba.ati.idp.function.point.Negative;
 import ar.edu.itba.ati.idp.io.ImageLoader;
@@ -150,6 +151,7 @@ public class EditMenuController extends Menu {
 
   @FXML
   private void handleContrastStretching() {
+    if (!workspace.isImageLoaded()) return;
     contrastStretchingPaneController.show();
   }
 
@@ -161,6 +163,14 @@ public class EditMenuController extends Menu {
   @FXML
   private void handleNoise() {
     noiseTabPaneController.show();
+  }
+
+  @FXML
+  private void handleNormalize() {
+    if (!workspace.isImageLoaded()) {
+      return;
+    }
+    workspace.applyToImage(Normalizer.INSTANCE);
   }
 
   // TODO: improve

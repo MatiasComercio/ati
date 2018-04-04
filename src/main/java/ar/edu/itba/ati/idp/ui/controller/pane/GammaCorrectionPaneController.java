@@ -86,10 +86,6 @@ public class GammaCorrectionPaneController extends VBox {
       return false;
     }
 
-    if (doubleValue < 0 || doubleValue > 2) {
-      return false;
-    }
-
-    return true;
+    return doubleValue > 0 && doubleValue < 2;
   }
 }

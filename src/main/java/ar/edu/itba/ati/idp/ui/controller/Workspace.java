@@ -216,6 +216,6 @@ public class Workspace {
 
   // TODO: try to set a handler that, when the image file matrix is updated, the workspace re-renders the image
   private void renderImage() {
-    this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImage(), null));
+    this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImagePlot(), null));
   }
 }

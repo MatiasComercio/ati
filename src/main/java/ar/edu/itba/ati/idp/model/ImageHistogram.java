@@ -3,6 +3,7 @@ package ar.edu.itba.ati.idp.model;
 import ar.edu.itba.ati.idp.model.ImageMatrix.Band;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ImageHistogram {
   private final List<BandHistogram> bandHistograms;
@@ -21,14 +22,14 @@ public class ImageHistogram {
 
   public static class BandHistogram {
     private final Band band;
-    private final int[] plainHistogram;
+    private final Map<Integer, Integer> plainHistogram;
 
-    private BandHistogram(final Band band, final int[] plainHistogram) {
+    private BandHistogram(final Band band, final Map<Integer, Integer> plainHistogram) {
       this.band = band;
       this.plainHistogram = plainHistogram;
     }
 
-    public static BandHistogram from(final Band band, final int[] plainHistogram) {
+    public static BandHistogram from(final Band band, final Map<Integer, Integer> plainHistogram) {
       return new BandHistogram(band, plainHistogram);
     }
 
@@ -36,7 +37,7 @@ public class ImageHistogram {
       return band;
     }
 
-    public int[] getPlainHistogram() {
+    public final Map<Integer, Integer> getPlainHistogram() {
       return plainHistogram;
     }
   }

@@ -12,12 +12,18 @@ import ar.edu.itba.ati.idp.model.ImageHistogram.BandHistogram;
 import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageMatrix {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImageMatrix.class);
 
   private static final int DEFAULT_MAX_PIXEL_VALUE = 255;
 
@@ -70,7 +76,7 @@ public class ImageMatrix {
       default:
         throw new IllegalStateException("Unsupported band size");
     }
-    return new ImageMatrix(normalizeNonInterleavedPixelsToDouble(pixels), type);
+    return new ImageMatrix(pixels, type);
   }
 
   // ========================= \Builders ========================= //
@@ -98,6 +104,10 @@ public class ImageMatrix {
     return height;
   }
 
+  public Type getType() {
+    return type;
+  }
+
   public static int getMaxNormalizedPixelValue() {
     return DEFAULT_MAX_PIXEL_VALUE;
   }
@@ -107,16 +117,87 @@ public class ImageMatrix {
     final List<Band> bands = type.toBands();
     final List<BandHistogram> bandHistograms = new LinkedList<>();
     for (final Band band : bands) {
-      final int[] plainHistogram = new int[getMaxNormalizedPixelValue() + 1];
-      normalize(pixels[band.bandIndex],
-                (normalizedPixel, x, y) -> plainHistogram[normalizedPixel] ++
-      );
+      final int bandI = band.bandIndex;
+      final Map<Integer, Integer> plainHistogram = new TreeMap<>();
+      for (int y = 0; y < pixels[bandI].length; y++) {
+        for (int x = 0; x < pixels[bandI][y].length; x++) {
+          plainHistogram.merge((int) pixels[bandI][y][x], 1, (originalValue, newValue) -> originalValue + newValue);
+        }
+      }
+      // Add all missing bands between min & max
+      final double[] minMax = ArrayUtils.minAndMax(pixels[bandI]);
+      for (int i = ((int) minMax[0]) + 1; i < minMax[1]; i++) { // At least one value of min & max => no need to iterate them
+        plainHistogram.putIfAbsent(i, 0);
+      }
       bandHistograms.add(BandHistogram.from(band, plainHistogram));
     }
     return ImageHistogram.from(bandHistograms);
   }
 
+  public Map<Band, Double> getAveragePixelPerBand(final int x0, final int y0, final int w, final int h) {
+    // TODO: Input validation
+    final Map<Band, Double> averagePixelPerBand = new HashMap<>();
+    final int total = (h - y0) * (w - x0);
+
+    for (final Band band : type.bands) {
+      double avg = 0;
+      final int b = band.bandIndex;
+      for (int y = y0; y < h; y++) {
+        for (int x = x0; x < w; x++) {
+          avg += pixels[b][y][x];
+        }
+      }
+      avg /= total;
+      averagePixelPerBand.put(band, avg);
+    }
+
+    return averagePixelPerBand;
+  }
+
+  public Map<Band, Double> getStandardDeviationPerBand(final int x0, final int y0,
+                                                       final int w,
+                                                       final int h,
+                                                       final Map<Band, Double> avgPixelPerBand) {
+    // TODO: Input validation
+    final Map<Band, Double> standardDeviationPerBand = new HashMap<>();
+    final int total = (h - y0) * (w - x0);
+    for (final Band band : type.bands) {
+      final Double avg = avgPixelPerBand.get(band);
+      if (avg == null) {
+        LOGGER.error("The expected band {} is not present in the average array. Skipping...", band);
+        continue;
+      }
+
+      final int b = band.bandIndex;
+      double variance = 0;
+      for (int y = y0; y < h; y++) {
+        for (int x = x0; x < w; x++) {
+          variance += Math.pow((pixels[b][y][x] - avg), 2);
+        }
+      }
+      variance /= total;
+      standardDeviationPerBand.put(band, Math.sqrt(variance));
+    }
+    return standardDeviationPerBand;
+  }
+
+  public BufferedImage toBufferedImagePlot() {
+    boolean shouldNormalize = false;
+    for (final Band band : type.bands) {
+      final double[] minMax = ArrayUtils.minAndMax(pixels[band.bandIndex]);
+      if (minMax[0] < 0 || minMax[1] > DEFAULT_MAX_PIXEL_VALUE) {
+        shouldNormalize = true;
+        break;
+      }
+    }
+    return shouldNormalize ? toNormalizedBufferedImage() : toNonNormalizedBufferedImage();
+  }
+
   public BufferedImage toBufferedImage() {
+    return toNormalizedBufferedImage();
+  }
+
+  private BufferedImage toNormalizedBufferedImage() {
     final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
 
     final int[][][] normalizedPixels = normalizeNonInterleavedPixelsToBytes(ArrayUtils.copyOf(pixels));
@@ -125,6 +206,20 @@ public class ImageMatrix {
       for (int y = 0; y < bufferedImage.getHeight(); y++) {
         for (int x = 0; x < bufferedImage.getWidth(); x++) {
           bufferedImage.getRaster().setSample(x, y, b, normalizedPixels[b][y][x]);
+        }
+      }
+    }
+
+    return bufferedImage;
+  }
+
+  private BufferedImage toNonNormalizedBufferedImage() {
+    final BufferedImage bufferedImage = new BufferedImage(width, height, bufferedImageType());
+
+    for (int b = 0; b < type.numBands; b++) {
+      for (int y = 0; y < bufferedImage.getHeight(); y++) {
+        for (int x = 0; x < bufferedImage.getWidth(); x++) {
+          bufferedImage.getRaster().setSample(x, y, b, pixels[b][y][x]);
         }
       }
     }
@@ -182,6 +277,20 @@ public class ImageMatrix {
     return ImageMatrix.fromNonInterleavedPixels(newMatrix);
   }
 
+  public ImageMatrix apply(final Band band, final DoubleArray2DUnaryOperator function) {
+    final double[][][] newPixels = new double[pixels.length][][];
+
+    for (int bandNum = 0; bandNum < pixels.length; bandNum++) {
+      if (bandNum == band.bandIndex) {
+        newPixels[bandNum] = function.apply(ArrayUtils.copyOf(pixels[bandNum]));
+      } else {
+        newPixels[bandNum] = ArrayUtils.copyOf(pixels[bandNum]);
+      }
+    }
+
+    return new ImageMatrix(newPixels, type);
+  }
+
   public ImageMatrix apply(final DoubleArray2DUnaryOperator function) {
     final double[][][] newPixels = new double[pixels.length][][];
 
@@ -214,27 +323,6 @@ public class ImageMatrix {
     return newPixels;
   }
   // ========================= \Apply ========================= //
-
-  public double[] getAveragePixel(final int x0, final int y0, final int w, final int h) {
-    // TODO: Input validation
-    final double[] avg = new double[type.numBands];
-    int total = 0;
-
-    for (int y = y0; y < h; y++) {
-      for (int x = x0; x < w; x++) {
-        total++;
-        for (int b = 0; b < type.numBands; b++) {
-          avg[b] += pixels[b][y][x];
-        }
-      }
-    }
-
-    for (int b = 0; b < type.numBands; b++) {
-      avg[b] /= total;
-    }
-
-    return avg;
-  }
 
   // ========================= Normalizers ========================= //
 
@@ -278,9 +366,17 @@ public class ImageMatrix {
     final double m = DEFAULT_MAX_PIXEL_VALUE / (max - min);
     final double b = -m * min;
 
+    final int intMin = (int) min;
+    final int intMax = (int) max;
+    final boolean shouldNormalize = ((intMin != intMax) || (intMin < 0) || (intMin > DEFAULT_MAX_PIXEL_VALUE));
+
     for (int y = 0; y < pixelsBand.length; y++) {
       for (int x = 0; x < pixelsBand[y].length; x++) {
-        pixelStore.visit((int) (m * pixelsBand[y][x] + b), x, y);
+        if (shouldNormalize) {
+          pixelStore.visit((int) (m * pixelsBand[y][x] + b), x, y);
+        } else {
+          pixelStore.visit((int) pixelsBand[y][x], x, y);
+        }
       }
     }
   }
