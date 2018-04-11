@@ -1,5 +1,7 @@
 package ar.edu.itba.ati.idp.function.filter.mask.nonlinear;
 
+import static ar.edu.itba.ati.idp.utils.ArrayUtils.getClampedValue;
+
 import ar.edu.itba.ati.idp.function.filter.mask.AbstractMask;
 import java.util.Arrays;
 
@@ -48,7 +50,7 @@ public class WeightedMedianMask extends AbstractMask {
     final double[] sortedPixels = new double[totalPixelsToSort];
     final int[] i = {0};
     iterateMask((maskX, maskY) -> {
-      final double pixel = clampedSafePixel(pixels, currCoreX + maskX, currCoreY + maskY);
+      final double pixel = getClampedValue(pixels, currCoreX + maskX, currCoreY + maskY);
       final int timesToAdd = (int) getMaskPixel(maskX, maskY);
       for (int k = 0; k < timesToAdd; k++) {
         sortedPixels[i[0]++] = pixel;

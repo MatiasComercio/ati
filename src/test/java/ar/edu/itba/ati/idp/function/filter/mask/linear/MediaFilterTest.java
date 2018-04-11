@@ -1,7 +1,8 @@
-package ar.edu.itba.ati.idp.function.filter;
+package ar.edu.itba.ati.idp.function.filter.mask.linear;
 
 import static org.junit.Assert.assertEquals;
 
+import ar.edu.itba.ati.idp.function.filter.Filter;
 import ar.edu.itba.ati.idp.function.filter.mask.linear.MediaMask;
 import org.junit.Test;
 
@@ -14,7 +15,7 @@ public class MediaFilterTest {
         {13,15,17}
     };
 
-    final Filter<MediaMask> mediaFilter = Filter.newInstance(MediaMask.newInstance(3,3));
+    final Filter<MediaMask> mediaFilter = Filter.newInstance(MediaMask.newInstance(3, 3));
     final double[][] newPixels = mediaFilter.apply(pixels);
     final double[][] expectedNewPixels = clampedExpectedPixels();
     for (int y = 0; y < pixels.length; y++) {

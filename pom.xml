@@ -28,7 +28,9 @@
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <commons-io.version>2.6</commons-io.version>
     <org.apache.commons.commons-math3.version>3.6.1</org.apache.commons.commons-math3.version>
-    <junit.version>4.0</junit.version>
+    <junit.version>4.12</junit.version>
+    <junitparams.version>1.1.1</junitparams.version>
+    <mockito-all.version>1.10.19</mockito-all.version>
   </properties>
 
   <build>
@@ -122,11 +124,26 @@
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
     </dependency>
+    <!--^LOGGING^-->
+    <!--TESTING-->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
     </dependency>
-    <!--^LOGGING^-->
+    <dependency>
+      <groupId>pl.pragmatists</groupId>
+      <artifactId>JUnitParams</artifactId>
+      <version>${junitparams.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito-all.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!--^TESTING^-->
   </dependencies>
 </project>

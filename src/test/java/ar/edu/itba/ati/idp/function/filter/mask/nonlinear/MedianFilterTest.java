@@ -1,7 +1,8 @@
-package ar.edu.itba.ati.idp.function.filter;
+package ar.edu.itba.ati.idp.function.filter.mask.nonlinear;
 
 import static org.junit.Assert.assertEquals;
 
+import ar.edu.itba.ati.idp.function.filter.Filter;
 import ar.edu.itba.ati.idp.function.filter.mask.nonlinear.MedianMask;
 import org.junit.Test;
 

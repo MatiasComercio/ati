@@ -1,7 +1,8 @@
-package ar.edu.itba.ati.idp.function.filter;
+package ar.edu.itba.ati.idp.function.filter.mask.linear;
 
 import static org.junit.Assert.assertEquals;
 
+import ar.edu.itba.ati.idp.function.filter.Filter;
 import ar.edu.itba.ati.idp.function.filter.mask.linear.HighPassMask;
 import org.junit.Test;
 

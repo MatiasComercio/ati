@@ -1,8 +1,8 @@
-package ar.edu.itba.ati.idp.function.filter;
+package ar.edu.itba.ati.idp.function.filter.mask.linear;
 
 import static org.junit.Assert.assertEquals;
 
-import ar.edu.itba.ati.idp.function.filter.mask.linear.GaussMask;
+import ar.edu.itba.ati.idp.function.filter.Filter;
 import org.junit.Test;
 
 public class GaussFilterTest {
@@ -13,6 +13,25 @@ public class GaussFilterTest {
   };
 
   private static final double SIGMA = 1;
+
+  @Test
+  public void bigSigmaTest() {
+    // Odd case
+    GaussMask gaussMask = GaussMask.newInstance(11);
+    double[][] mask = gaussMask.getMask();
+    int expectedSize = 33;
+
+    assertEquals(expectedSize, mask.length);
+    assertEquals(expectedSize, mask[0].length);
+
+    // Even case
+    gaussMask = GaussMask.newInstance(12);
+    mask = gaussMask.getMask();
+    expectedSize = 35;
+
+    assertEquals(expectedSize, mask.length);
+    assertEquals(expectedSize, mask[0].length);
+  }
 
   @Test
   public void testApply() {

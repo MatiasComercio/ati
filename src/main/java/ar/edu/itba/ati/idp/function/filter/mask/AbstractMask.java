@@ -7,7 +7,8 @@ public abstract class AbstractMask implements Mask {
   private final int coreXDistanceToRight;
   private final int coreYDistanceToTop;
   private final int coreYDistanceToBottom;
-  private final double[][] mask;
+  // Subclass responsibility to not break anything here.
+  protected double[][] mask;
 
   private boolean maskInitialized;
 
@@ -32,17 +33,15 @@ public abstract class AbstractMask implements Mask {
 
   @Override
   public final double apply(final double[][] pixels, final int currCoreX, final int currCoreY) {
+    initializeMaskIfNecessary();
+    return applyMaskTo(pixels, currCoreX, currCoreY);
+  }
+
+  protected final void initializeMaskIfNecessary() {
     if (!maskInitialized) {
       initializeMask();
       maskInitialized = true;
     }
-    return applyMaskTo(pixels, currCoreX, currCoreY);
-  }
-
-  protected double clampedSafePixel(final double[][] pixels, final int x, final int y) {
-    final int clampedY = y < 0 ? 0 : y >= pixels.length ? pixels.length - 1 : y;
-    final int clampedX = x < 0 ? 0 : x >= pixels[clampedY].length ? pixels[clampedY].length - 1 : x;
-    return pixels[clampedY][clampedX];
   }
 
   protected double getMaskPixel(final int maskX, final int maskY) {
