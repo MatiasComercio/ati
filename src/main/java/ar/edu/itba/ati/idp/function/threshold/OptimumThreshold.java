@@ -4,15 +4,15 @@ import static ar.edu.itba.ati.idp.utils.ArrayUtils.newWithSizeOf;
 import static ar.edu.itba.ati.idp.utils.Doubles.equal;
 import static java.lang.Math.pow;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.Normalizer;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.point.Threshold;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
 import java.util.LinkedList;
 import java.util.List;
 
-public enum OptimumThreshold implements DoubleArray2DUnaryOperator {
-  INSTANCE;
+public enum OptimumThreshold implements UniquePixelsBandOperator {
+  OPTIMUM_THRESHOLD;
 
   @Override
   public double[][] apply(final double[][] pixels) {

@@ -1,6 +1,7 @@
 package ar.edu.itba.ati.idp.model;
 
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.io.ImageIO;
 import java.io.File;
 import java.io.IOException;
@@ -14,11 +15,13 @@ public class ImageFile {
   private final Deque<ImageMatrix> undoImageMatrices;
   private final Deque<ImageMatrix> redoImageMatrices;
 
+  private final File originalFile;
   private File file;
   private ImageMatrix imageMatrix;
 
-  public ImageFile(final File file, final ImageMatrix imageMatrix, final ImageIO imageIO) {
-    this.file = Objects.requireNonNull(file);
+  public ImageFile(final File originalFile, final ImageMatrix imageMatrix, final ImageIO imageIO) {
+    this.originalFile = Objects.requireNonNull(originalFile);
+    this.file = this.originalFile;
     this.imageMatrix = Objects.requireNonNull(imageMatrix);
     this.imageIO = Objects.requireNonNull(imageIO);
     this.undoImageMatrices = new LinkedList<>();
@@ -43,6 +46,13 @@ public class ImageFile {
   }
 
   public void apply(final DoubleArray2DUnaryOperator function) {
+    setImageMatrix(imageMatrix.apply(function));
+  }
+
+  public void apply(final UniquePixelsBandOperator function) {
+    // xhelp: do we need to change the type of image here? (example: to ASCII PGM)
+    // I'm asking this because now the image is grey scale only when looking at it,
+    // but it's histogram will be all equal per band :thinking:
     setImageMatrix(imageMatrix.apply(function));
   }
 
@@ -75,5 +85,17 @@ public class ImageFile {
       deque.poll(); // Discard the oldest image
     }
     deque.push(imageMatrix);
+  }
+
+  public ImageFile duplicate() {
+    final ImageFile imageFile = new ImageFile(originalFile, imageMatrix.duplicate(), imageIO);
+    imageFile.file = file;
+    imageFile.undoImageMatrices.addAll(undoImageMatrices);
+    imageFile.redoImageMatrices.addAll(redoImageMatrices);
+    return imageFile;
+  }
+
+  public File getOriginalFile() {
+    return originalFile;
   }
 }

@@ -3,6 +3,7 @@ package ar.edu.itba.ati.idp.ui.controller;
 import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.io.ImageLoader;
 import ar.edu.itba.ati.idp.model.ImageFile;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
@@ -10,8 +11,10 @@ import ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,7 +39,8 @@ public class Workspace {
       new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
   private static final KeyCombination REDO_KEYS =
       new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
-
+  private static final KeyCombination DUPLICATE_KEYS =
+      new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN);
 
   // Important! If the FXML element needs a reference to this workspace,
   // assign it in the #start method of this class
@@ -66,6 +70,7 @@ public class Workspace {
 
     this.stage.addEventFilter(KeyEvent.KEY_PRESSED, undoHandler());
     this.stage.addEventFilter(KeyEvent.KEY_PRESSED, redoHandler());
+    this.stage.addEventFilter(KeyEvent.KEY_PRESSED, duplicateHandler());
 
     // Make the stage visible
     this.stage.show();
@@ -99,6 +104,14 @@ public class Workspace {
     };
   }
 
+  private EventHandler<KeyEvent> duplicateHandler() {
+    return keyEvent -> {
+      if (DUPLICATE_KEYS.match(keyEvent)) {
+        duplicate();
+        keyEvent.consume(); // Stop passing the event to next node
+      }
+    };
+  }
 
   public static Workspace newInstance() {
     // Load the fxml containing the workspace layout
@@ -198,11 +211,28 @@ public class Workspace {
     return imageFile != null;
   }
 
+  /**
+   *
+   * @return The image file; null if not present.
+   * @deprecated in favour of {@link Workspace#getOpImageFile}
+   */
+  @Deprecated
   public ImageFile getImageFile() {
     return imageFile;
   }
 
+  public Optional<ImageFile> getOpImageFile() {
+    if (!isImageLoaded()) LOGGER.warn("No image loaded on workspace.");
+    return Optional.ofNullable(imageFile);
+  }
+
   public ImageFile applyToImage(final DoubleArray2DUnaryOperator function) {
+    imageFile.apply(function);
+    renderImage();
+    return imageFile;
+  }
+
+  public ImageFile applyToImage(final UniquePixelsBandOperator function) {
     imageFile.apply(function);
     renderImage();
     return imageFile;
@@ -217,5 +247,13 @@ public class Workspace {
   // TODO: try to set a handler that, when the image file matrix is updated, the workspace re-renders the image
   private void renderImage() {
     this.imagePane.loadImage(toFXImage(imageFile.getImageMatrix().toBufferedImagePlot(), null));
+  }
+
+  public void duplicate() {
+    getOpImageFile().ifPresent(imageFile -> Workspace.newInstance(imageFile.duplicate()));
+  }
+
+  public void openOriginalInNewWorkspace() {
+    getOpImageFile().ifPresent(theImageFile -> filesToImageFiles(Collections.singletonList(theImageFile.getOriginalFile())).forEach(Workspace::newInstance));
   }
 }

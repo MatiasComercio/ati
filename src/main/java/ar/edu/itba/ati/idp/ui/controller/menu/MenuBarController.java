@@ -21,6 +21,10 @@ public class MenuBarController extends MenuBar {
   @FXML
   private EditMenuController editMenu;
 
+  @FXML
+  private TP2MenuController tp2Menu;
+
+
   public MenuBarController() {
     ResourceLoader.INSTANCE.loadCustomFxml(LAYOUT_PATH, this);
   }
@@ -28,5 +32,6 @@ public class MenuBarController extends MenuBar {
   public void setWorkspace(final Workspace workspace) {
     fileMenu.setWorkspace(workspace);
     editMenu.setWorkspace(workspace);
+    tp2Menu.setWorkspace(workspace);
   }
 }

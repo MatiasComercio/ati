@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.DiffusionFilter.DiffusionBorderDetector;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Before;
@@ -36,10 +37,10 @@ public class DiffusionFilterTest {
     // given
     final DiffusionBorderDetector diffusionBorderDetector = mock(DiffusionBorderDetector.class);
     given(diffusionBorderDetector.apply(anyDouble())).willReturn(BORDER_DETECTOR_RESPONSE);
-    final DiffusionFilter diffusionFilter = DiffusionFilter.newInstance(diffusionBorderDetector);
+    final UniquePixelsBandOperator diffusionFilter = DiffusionFilter.newInstance(diffusionBorderDetector, times);
 
     // when
-    final double[][] newPixels = diffusionFilter.apply(pixels, times);
+    final double[][] newPixels = diffusionFilter.apply(pixels);
 
     // verify
     final int expectedTimes = times * pixels.length * pixels[0].length * 4; // 4: one per direction.

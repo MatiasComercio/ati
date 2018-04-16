@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.TP2MenuController?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.TP2MenuController"
+  xmlns:fx="http://javafx.com/fxml" mnemonicParsing="false" text="TP2">
+  <MenuItem onAction="#handlePrewittBorderDetector" mnemonicParsing="false" text="Prewitt Border Detector"/>
+  <MenuItem onAction="#handleSobelBorderDetector" mnemonicParsing="false" text="Sobel Border Detector"/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleUnnamedDirectionalBorderDetector" mnemonicParsing="false" text="Unnamed Directional Border Detector"/>
+  <MenuItem onAction="#handleKirschDirectionalBorderDetector" mnemonicParsing="false" text="Kirsch Directional Border Detector"/>
+  <MenuItem onAction="#handlePrewittDirectionalBorderDetector" mnemonicParsing="false" text="Prewitt Directional Border Detector"/>
+  <MenuItem onAction="#handleSobelDirectionalBorderDetector" mnemonicParsing="false" text="Sobel Directional Border Detector"/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleLaplaceBorderDetector" mnemonicParsing="false" text="Laplace Border Detector"/>
+  <MenuItem onAction="#handleLaplaceSlopeBorderDetector" mnemonicParsing="false" text="Laplace Slope Border Detector"/>
+  <MenuItem onAction="#handleLoGBorderDetector" mnemonicParsing="false" text="LoG Border Detector..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleIsotropicDiffusion" mnemonicParsing="false" text="Isotropic Diffusion"/>
+  <MenuItem onAction="#handleAnisotropicLeclercDiffusion" mnemonicParsing="false" text="Anisotropic Leclerc Diffusion..."/>
+  <MenuItem onAction="#handleAnisotropicLorentzDiffusion" mnemonicParsing="false" text="Anisotropic Lorentz Diffusion..."/>
+  <MenuItem onAction="#handleAnisotropicMinDiffusion" mnemonicParsing="false" text="Anisotropic Min Diffusion..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleGlobalThresholding" mnemonicParsing="false" text="Global Thresholding"/>
+  <MenuItem onAction="#handleOptimumThreshold" mnemonicParsing="false" text="Optimum (Otsu) Threshold"/>
+</fx:root>

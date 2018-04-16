@@ -1,14 +1,13 @@
 package ar.edu.itba.ati.idp.function.filter;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
-import ar.edu.itba.ati.idp.function.filter.mask.Mask;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.mask.RotatableMask;
 import ar.edu.itba.ati.idp.utils.MatrixRotator.Degree;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DirectionalFilter<T extends Mask> implements DoubleArray2DUnaryOperator {
+public class DirectionalFilter<T extends RotatableMask<T>> implements UniquePixelsBandOperator {
   private static final double MIN_ABS_VALUE = 0;
 
   private final List<T> masks;

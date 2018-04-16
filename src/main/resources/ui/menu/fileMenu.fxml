@@ -11,6 +11,8 @@
   <SeparatorMenuItem mnemonicParsing="false"/>
 
   <MenuItem onAction="#handleItemNewWorkspace" mnemonicParsing="false" text="New workspace"/>
+  <MenuItem onAction="#handleItemDuplicateWorkspace" mnemonicParsing="false" text="Duplicate workspace"/>
+  <MenuItem onAction="#handleItemOpenOriginalInNewWorkspace" mnemonicParsing="false" text="Open original in new workspace"/>
 
   <SeparatorMenuItem mnemonicParsing="false"/>
 

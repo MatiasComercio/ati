@@ -42,6 +42,16 @@ public class FileMenuController extends Menu {
   }
 
   @FXML
+  public void handleItemDuplicateWorkspace() {
+    workspace.duplicate();
+  }
+
+  @FXML
+  public void handleItemOpenOriginalInNewWorkspace() {
+    workspace.openOriginalInNewWorkspace();
+  }
+
+  @FXML
   public void handleItemSave() {
     workspace.save();
   }

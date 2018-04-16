@@ -31,7 +31,7 @@ public class GlobalThresholdingTest {
   @Test
   public void testApply() {
     // when
-    final double[][] newPixels = GlobalThresholding.INSTANCE.apply(PIXELS);
+    final double[][] newPixels = GlobalThresholding.GLOBAL_THRESHOLDING.apply(PIXELS);
 
     // verify
     assertEquals(EXPECTED_PIXELS.length, newPixels.length);

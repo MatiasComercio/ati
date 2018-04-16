@@ -7,6 +7,7 @@ import ar.edu.itba.ati.idp.ui.controller.pane.filter.MediaFilterController;
 import ar.edu.itba.ati.idp.ui.controller.pane.filter.MedianFilterController;
 import ar.edu.itba.ati.idp.ui.controller.pane.filter.WeightedMedianFilterController;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
+import java.util.function.Consumer;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
 
@@ -41,31 +42,30 @@ public class FilterMenuController extends Menu {
 
   @FXML
   public void handleMediaFilter() {
-    if (!workspace.isImageLoaded()) return;
-    mediaFilterController.show(workspace.getImageFile().getFile().getName()); // TODO: workspace.getFileName();
+    show(mediaFilterController::show);
   }
 
   @FXML
   public void handleGaussFilter() {
-    if (!workspace.isImageLoaded()) return;
-    gaussFilterController.show(workspace.getImageFile().getFile().getName());
+    show(gaussFilterController::show);
   }
 
   @FXML
   public void handleMedianFilter() {
-    if (!workspace.isImageLoaded()) return;
-    medianFilterController.show(workspace.getImageFile().getFile().getName());
+    show(medianFilterController::show);
   }
 
   @FXML
   public void handleWeightedMedianFilter() {
-    if (!workspace.isImageLoaded()) return;
-    weightedMedianFilterController.show(workspace.getImageFile().getFile().getName());
+    show(weightedMedianFilterController::show);
   }
 
   @FXML
   public void handleHighPassFilter() {
-    if (!workspace.isImageLoaded()) return;
-    highPassFilterController.show(workspace.getImageFile().getFile().getName());
+    show(highPassFilterController::show);
+  }
+
+  private void show(final Consumer<String> show) {
+    workspace.getOpImageFile().ifPresent(imageFile ->  show.accept(imageFile.getFile().getName())); // TODO: workspace.getFileName();
   }
 }

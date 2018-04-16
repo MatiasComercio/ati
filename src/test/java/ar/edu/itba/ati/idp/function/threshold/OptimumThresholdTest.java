@@ -32,7 +32,7 @@ public class OptimumThresholdTest {
 
   @Test
   public void applyTest() {
-    final double[][] newPixels = OptimumThreshold.INSTANCE.apply(PIXELS);
+    final double[][] newPixels = OptimumThreshold.OPTIMUM_THRESHOLD.apply(PIXELS);
     assertEquals(EXPECTED_PIXELS.length, newPixels.length);
     for (int y = 0; y < EXPECTED_PIXELS.length; y++) {
       assertEquals(EXPECTED_PIXELS[y].length, newPixels.length);

@@ -5,9 +5,10 @@ import static ar.edu.itba.ati.idp.utils.ArrayUtils.getClampedValue;
 import static java.lang.Math.exp;
 import static java.lang.Math.pow;
 
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import java.util.stream.Stream;
 
-public class DiffusionFilter {
+public class DiffusionFilter implements UniquePixelsBandOperator {
   private static final int[][] DIRECTIONS = new int[][] {
       /*  {  x,  y }  */
       {  0, -1 }, // N
@@ -19,22 +20,32 @@ public class DiffusionFilter {
   private static final double LAMBDA = 1d / DIRECTIONS.length;
 
   private final DiffusionBorderDetector diffusionBorderDetector;
+  private final int times;
 
-  private DiffusionFilter(final DiffusionBorderDetector diffusionBorderDetector) {
+  private DiffusionFilter(final DiffusionBorderDetector diffusionBorderDetector, final int times) {
     this.diffusionBorderDetector = diffusionBorderDetector;
-  }
-
-  public static DiffusionFilter newInstance(final DiffusionBorderDetector diffusionBorderDetector) {
-    return new DiffusionFilter(diffusionBorderDetector);
+    this.times = times;
   }
 
   /**
-   * Apply this diffusion filter to the given {@code pixels} matrix the given {@code times}.
-   * @param pixels The pixel matrix to which this diffusion filter will be applied.
-   * @param times The amount of times this filter will be applied consecutively to the pixel matrix.
-   * @return The result of applying this filter to the {@code pixels} matrix {@code times} times.
+   *
+   * @param diffusionBorderDetector The diffusion border detector that will be used when calling {@link #apply}.
+   * @param times The amount of times this filter will be applied consecutively to the pixel matrix when calling {@link #apply}.
+   * @return The new diffusion filter characterized by the given parameters.
    */
-  public double[][] apply(final double[][] pixels, final int times) {
+  public static DiffusionFilter newInstance(final DiffusionBorderDetector diffusionBorderDetector, final int times) {
+    return new DiffusionFilter(diffusionBorderDetector, times);
+  }
+
+  /**
+   * Apply this diffusion filter to the given {@code pixels} matrix using the provided instance parameters.
+   *
+   * @param pixels The pixel matrix to which this diffusion filter will be applied.
+   * @return The result of applying this filter to the {@code pixels} matrix {@code times} times,
+   *         using the instance {@code diffusionBorderDetector}.
+   * @see #newInstance(DiffusionBorderDetector, int)
+   */
+  public double[][] apply(final double[][] pixels) {
     double[][] curr = copyOf(pixels);
     double[][] next = new double[curr.length][curr[0].length];
     for (int time = 0; time < times; time++) {

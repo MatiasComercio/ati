@@ -1,6 +1,7 @@
 package ar.edu.itba.ati.idp;
 
 import static ar.edu.itba.ati.idp.utils.Doubles.equal;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -52,5 +53,15 @@ public enum TestHelper {
   public void assertEqual(final double expected, final double actual) {
     final String msg = String.format("Expected: %f, Actual: %f", expected, actual);
     assertTrue(msg, equal(expected, actual));
+  }
+
+  public void assertEqual(final double[][] expected, final double[][] actual) {
+    assertEquals(expected.length, actual.length);
+    for (int y = 0; y < expected.length; y++) {
+      assertEquals(expected[y].length, actual[y].length);
+      for (int x = 0; x < expected[y].length; x++) {
+        assertEqual(expected[y][x], actual[y][x]);
+      }
+    }
   }
 }

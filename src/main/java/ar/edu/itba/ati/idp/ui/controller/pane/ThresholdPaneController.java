@@ -103,13 +103,12 @@ public class ThresholdPaneController extends VBox {
       return false;
     }
 
-    final int intValue;
     try {
-      intValue = Integer.parseInt(input);
+      Integer.parseInt(input);
     } catch (final NumberFormatException exception) {
       return false;
     }
 
-    return intValue >= 0 && intValue <= 255;
+    return true;
   }
 }

@@ -1,10 +1,10 @@
 package ar.edu.itba.ati.idp.function.filter;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.mask.Mask;
 import ar.edu.itba.ati.idp.utils.MatrixSlopesProcessor;
 
-public class ZeroCrossesFilter implements DoubleArray2DUnaryOperator {
+public class ZeroCrossesFilter implements UniquePixelsBandOperator {
   private final Filter<Mask> filter;
   private final MatrixSlopesProcessor matrixSlopesProcessor;
 

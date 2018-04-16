@@ -1,13 +1,13 @@
 package ar.edu.itba.ati.idp.function.threshold;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.Normalizer;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.point.Threshold;
 import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.util.concurrent.ThreadLocalRandom;
 
-public enum GlobalThresholding implements DoubleArray2DUnaryOperator {
-  INSTANCE;
+public enum GlobalThresholding implements UniquePixelsBandOperator {
+  GLOBAL_THRESHOLDING;
 
   private static final int DELTA_THRESHOLD = 1;
 

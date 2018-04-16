@@ -6,8 +6,11 @@ import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.BLUE;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREEN;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREY;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.RED;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.model.ImageHistogram.BandHistogram;
 import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.awt.image.BufferedImage;
@@ -172,7 +175,7 @@ public class ImageMatrix {
       double variance = 0;
       for (int y = y0; y < h; y++) {
         for (int x = x0; x < w; x++) {
-          variance += Math.pow((pixels[b][y][x] - avg), 2);
+          variance += pow((pixels[b][y][x] - avg), 2);
         }
       }
       variance /= total;
@@ -301,6 +304,42 @@ public class ImageMatrix {
     return new ImageMatrix(newPixels, type);
   }
 
+  public ImageMatrix apply(final UniquePixelsBandOperator function) {
+    final double[][] compressedBands;
+
+    if (type.numBands > 1) {
+      compressedBands = compressBands();
+    } else {
+      compressedBands = pixels[0];
+    }
+
+    final double[][] resultPixels = function.apply(compressedBands);
+    final double[][][] newPixels = new double[type.numBands][][];
+
+    // As bands has been compressed, we are now forced to assign the same pixels to all bands.
+    for (final Band band : type.bands) {
+      newPixels[band.bandIndex] = resultPixels;
+    }
+
+    return new ImageMatrix(newPixels, type);
+  }
+
+  private double[][] compressBands() {
+    final double[][] compressedBands = new double[height][width];
+
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        double compressedPixel = 0;
+        for (final Band band : type.bands) {
+          compressedPixel += pow(pixels[band.bandIndex][y][x], 2);
+        }
+        compressedBands[y][x] = sqrt(compressedPixel);
+      }
+    }
+
+    return compressedBands;
+  }
+
   public ImageMatrix apply(final DoubleUnaryOperator function) {
     final double[][][] newPixels = new double[pixels.length][][];
 
@@ -321,6 +360,11 @@ public class ImageMatrix {
     }
 
     return newPixels;
+  }
+
+  @SuppressWarnings("WeakerAccess") // May be used outside this package later on.
+  public ImageMatrix duplicate() {
+    return ImageMatrix.fromNonInterleavedPixels(pixels);
   }
   // ========================= \Apply ========================= //
 

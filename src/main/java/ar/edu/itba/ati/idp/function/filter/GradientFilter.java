@@ -1,13 +1,12 @@
 package ar.edu.itba.ati.idp.function.filter;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
-import ar.edu.itba.ati.idp.function.filter.mask.Mask;
+import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.mask.RotatableMask;
 import ar.edu.itba.ati.idp.utils.MatrixRotator.Degree;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GradientFilter<T extends Mask> implements DoubleArray2DUnaryOperator {
+public class GradientFilter<T extends RotatableMask<T>> implements UniquePixelsBandOperator {
   private final List<T> masks;
 
   private GradientFilter(final List<T> masks) {
