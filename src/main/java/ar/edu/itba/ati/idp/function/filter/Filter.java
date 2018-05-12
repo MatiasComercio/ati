@@ -6,7 +6,7 @@ import ar.edu.itba.ati.idp.function.filter.mask.Mask;
 public class Filter<T extends Mask> implements DoubleArray2DUnaryOperator {
   private final T mask;
 
-  private Filter(final T mask) {
+  protected Filter(final T mask) {
     this.mask = mask;
   }
 
