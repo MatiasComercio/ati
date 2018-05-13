@@ -5,9 +5,9 @@ import static java.lang.Math.abs;
 import ar.edu.itba.ati.idp.function.filter.mask.nonlinear.SusanMask;
 
 // Useful: https://users.fmrib.ox.ac.uk/~steve/susan/susan/susan.html
-public final class SusanFilter extends Filter<SusanMask> {
+public final class SusanFilter extends Filter<SusanMask> { // FIXME: should IMPLEMENT ColorOver ... Or 2DTo3D, depending whether it accepts or not color images.
 
-  private static final double THRESHOLD = 0.10;
+  private static final double THRESHOLD = 0.10; // FIXME: threshold should be part of Type, & Type should be package-private.
 
   public enum Type {
     NONE(0.0), BORDER(0.5), CORNER(0.75);

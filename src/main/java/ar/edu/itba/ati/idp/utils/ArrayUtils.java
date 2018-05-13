@@ -206,6 +206,16 @@ public abstract class ArrayUtils {
     return new double[]{min, max};
   }
 
+  /** Inclusive end */
+  public static double[] newRangedArray(final double start, final double step, final double end) {
+    final int length = (int) ((end - start) / step) + 1; // Floor operation; then +1 for inclusive end
+    final double[] rangeArray = new double[length];
+    for (int i = 0; i < rangeArray.length; i++) {
+      rangeArray[i] = start + i * step;
+    }
+    return rangeArray;
+  }
+
   public enum DegreeDirection {
     DEGREE_0(Direction.W, Direction.E),
     DEGREE_45(Direction.SW, Direction.NE),

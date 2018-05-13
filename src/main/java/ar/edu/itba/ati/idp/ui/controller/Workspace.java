@@ -2,6 +2,7 @@ package ar.edu.itba.ati.idp.ui.controller;
 
 import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
+import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.io.ImageLoader;
@@ -233,6 +234,12 @@ public class Workspace {
   }
 
   public ImageFile applyToImage(final UniquePixelsBandOperator function) {
+    imageFile.apply(function);
+    renderImage();
+    return imageFile;
+  }
+
+  public ImageFile applyOverImage(final ColorOverUniquePixelsBandOperator function) {
     imageFile.apply(function);
     renderImage();
     return imageFile;

@@ -6,9 +6,11 @@ import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.BLUE;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREEN;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREY;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.RED;
+import static java.lang.Math.max;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
+import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.model.ImageHistogram.BandHistogram;
@@ -64,8 +66,11 @@ public class ImageMatrix {
   }
 
   public static ImageMatrix fromNonInterleavedPixels(final double[][][] pixels) {
-    final Type type;
+    return new ImageMatrix(pixels, getTypeFor(pixels));
+  }
 
+  private static Type getTypeFor(final double[][][] pixels) {
+    final Type type;
     switch (pixels.length) { // All breaking cases here will lately derived into illegal states too
       case 1:
         type = Type.BYTE_G;
@@ -79,7 +84,7 @@ public class ImageMatrix {
       default:
         throw new IllegalStateException("Unsupported band size");
     }
-    return new ImageMatrix(pixels, type);
+    return type;
   }
 
   // ========================= \Builders ========================= //
@@ -324,6 +329,46 @@ public class ImageMatrix {
     return new ImageMatrix(newPixels, type);
   }
 
+  public ImageMatrix apply(final ColorOverUniquePixelsBandOperator function) {
+    final double[][] compressedBands;
+
+    if (type.numBands > 1) {
+      compressedBands = compressBands();
+    } else {
+      compressedBands = pixels[0];
+    }
+
+    return merge(function.apply(compressedBands));
+  }
+
+  private ImageMatrix merge(final double[][][] otherPixels) {
+    // Merge policy: 1. Take the max pixel of both; 2. Create an image with the max #bands of both.
+
+    // As called internally, it's assumed that both pixel matrices are of the same size.
+    final Type otherType = getTypeFor(otherPixels);
+    final Type newType = type.numBands > otherType.numBands ? type : otherType;
+    final double[][][] newPixels = new double[newType.numBands][width][height];
+    for (final Band band : newType.bands) {
+      final int bandI = band.bandIndex;
+      for (int y = 0; y < pixels.length; y++) {
+        for (int x = 0; x < pixels[y].length; x++) {
+          final double newPixel;
+          if (bandI >= type.numBands) { // `other` pixel should be defined.
+            newPixel = otherPixels[bandI][y][x];
+          } else if (bandI >= otherType.numBands) { // `this` pixel should be defined.
+            newPixel = pixels[bandI][y][x];
+          } else { // both (`this` & `other`) pixels are defined => take the max of them.
+            newPixel = max(pixels[bandI][y][x], otherPixels[bandI][y][x]);
+          }
+          newPixels[bandI][y][x] = newPixel;
+        }
+      }
+    }
+
+    return new ImageMatrix(newPixels, newType);
+  }
+
+
   private double[][] compressBands() {
     final double[][] compressedBands = new double[height][width];
 
@@ -362,11 +407,12 @@ public class ImageMatrix {
     return newPixels;
   }
 
+  // ========================= \Apply ========================= //
+
   @SuppressWarnings("WeakerAccess") // May be used outside this package later on.
   public ImageMatrix duplicate() {
     return ImageMatrix.fromNonInterleavedPixels(pixels);
   }
-  // ========================= \Apply ========================= //
 
   // ========================= Normalizers ========================= //
 
