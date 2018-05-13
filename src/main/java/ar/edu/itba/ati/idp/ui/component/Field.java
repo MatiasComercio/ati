@@ -59,6 +59,11 @@ public class Field<T> extends VBox {
     return inputExtractor.getValue(textField.getText());
   }
 
+  public void setValue(T value) {
+    textField.setText(value.toString());
+  }
+
+
   public boolean isValid() {
     return getValue() != null;
   }

@@ -239,7 +239,7 @@ public class Workspace {
     return imageFile;
   }
 
-  public ImageFile applyOverImage(final ColorOverUniquePixelsBandOperator function) {
+  public ImageFile applyToImage(final ColorOverUniquePixelsBandOperator function) {
     imageFile.apply(function);
     renderImage();
     return imageFile;

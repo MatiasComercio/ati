@@ -5,7 +5,9 @@ import static ar.edu.itba.ati.idp.ui.component.CustomEvent.NEW_INVALID_INPUT;
 import static ar.edu.itba.ati.idp.ui.component.CustomEvent.NEW_VALID_INPUT;
 
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
+import ar.edu.itba.ati.idp.utils.ArrayUtils;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -33,7 +35,7 @@ public class FloatingPane extends VBox implements Showable {
   protected Workspace workspace;
 
   private FloatingPane(final String stageTitle, final ApplyHandler applyHandler,
-                       final Field[] fields) {
+                       final Field[][] fields) {
     this.stageTitle = stageTitle;
     this.applyHandler = applyHandler;
     // Own configuration.
@@ -43,8 +45,13 @@ public class FloatingPane extends VBox implements Showable {
     // Own elements configuration.
     final List<Node> children = getChildren();
     children.add(title(stageTitle));
-    this.fields = Arrays.asList(fields);
-    children.add(wrapFields(this.fields));
+    final List<Field> fieldsList = new LinkedList<>();
+    for (final Field[] fieldsRow : fields) {
+      final List<Field> fieldsRowList = Arrays.asList(fieldsRow);
+      children.add(wrapFields(fieldsRowList));
+      fieldsList.addAll(fieldsRowList);
+    }
+    this.fields = fieldsList;
     this.applyButton = newButton();
     children.add(this.applyButton);
 
@@ -64,6 +71,11 @@ public class FloatingPane extends VBox implements Showable {
 
   public static FloatingPane newInstance(final String stageTitle, final ApplyHandler applyHandler,
                                          final Field... fields) {
+    return new FloatingPane(stageTitle, applyHandler, new Field[][] {fields});
+  }
+
+  public static FloatingPane newInstance(final String stageTitle, final ApplyHandler applyHandler,
+                                         final Field[]... fields) {
     return new FloatingPane(stageTitle, applyHandler, fields);
   }
 

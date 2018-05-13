@@ -23,10 +23,9 @@ public class CannyFilter implements UniquePixelsBandOperator {
   private final Mask maskDX;
   private final Mask maskDY;
 
-  private CannyFilter(final List<Filter<GaussMask>> gaussFilters,
-      final RotatableMask<SobelMask> mask) {
+  private CannyFilter(final List<Filter<GaussMask>> gaussFilters, final RotatableMask<SobelMask> mask) {
     this.gaussFilters = gaussFilters;
-    this.maskDX = mask;
+    this.maskDX = mask; // TODO: We should validate this. What if SobelMask orientation changes?
     this.maskDY = mask.rotate(Degree.D90);
   }
 
@@ -60,8 +59,8 @@ public class CannyFilter implements UniquePixelsBandOperator {
         }
       }
 
-      final double[][] borderMagnitudes = NonMaximalSuppression
-          .apply(pixelsFiltered, borderDirections);
+      // FIXME: this NonMaximalSuppression should be applied to the magnitude matrix, not de filtered one directly.
+      final double[][] borderMagnitudes = NonMaximalSuppression.apply(pixelsFiltered, borderDirections);
 
       images[i++] = HysteresisThreshold.INSTANCE.apply(borderMagnitudes);
     }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.TP3MenuController?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.TP3MenuController"
+  xmlns:fx="http://javafx.com/fxml" mnemonicParsing="false" text="TP3">
+  <MenuItem onAction="#handleCannyBorderDetector" mnemonicParsing="false" text="Canny Border Detector..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleSusanBorderAndCornerDetector" mnemonicParsing="false" text="Susan Border And Corner Detector..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleHoughMethodForRects" mnemonicParsing="false" text="Hough Method - Rects..."/>
+  <MenuItem onAction="#handleHoughMethodForCircles" mnemonicParsing="false" text="Hough Method - Circles..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+  <MenuItem onAction="#handleActiveContoursMethod" mnemonicParsing="false" text="Active Contours Method..."/>
+
+</fx:root>

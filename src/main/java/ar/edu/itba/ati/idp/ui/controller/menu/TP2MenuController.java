@@ -3,7 +3,6 @@ package ar.edu.itba.ati.idp.ui.controller.menu;
 import static ar.edu.itba.ati.idp.function.threshold.GlobalThresholding.GLOBAL_THRESHOLDING;
 import static ar.edu.itba.ati.idp.function.threshold.OptimumThreshold.OPTIMUM_THRESHOLD;
 
-import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.border.Diffusion;
 import ar.edu.itba.ati.idp.function.border.DirectionalBorderDetector;
