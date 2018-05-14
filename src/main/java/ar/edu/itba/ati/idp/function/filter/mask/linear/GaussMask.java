@@ -19,6 +19,14 @@ public final class GaussMask extends AbstractLinearMask {
     return new GaussMask(sideLength, sigma);
   }
 
+  public static GaussMask newInstance(final int sideLength, final double sigma) {
+    if (sigma <= 0) {
+      throw new IllegalArgumentException("sigma should be positive");
+    }
+
+    return new GaussMask(sideLength, sigma);
+  }
+
   private static int bigMaskSize(final int ceilSigma) {
     final int maskSize = 3 * ceilSigma;
     // Always return odd size so as to have only one possible core position.

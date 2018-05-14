@@ -46,23 +46,27 @@ public class CannyFilter implements UniquePixelsBandOperator {
 
     for (final Filter<GaussMask> gaussFilter : gaussFilters) {
       final double[][] pixelsFiltered = gaussFilter.apply(pixels);
+      final double[][] borderMagnitudes = new double[pixelsFiltered.length][];
       final double[][] borderDirections = new double[pixelsFiltered.length][];
 
       for (int y = 0; y < pixelsFiltered.length; y++) {
+        borderMagnitudes[y] = new double[pixelsFiltered[y].length];
         borderDirections[y] = new double[pixelsFiltered[y].length];
 
         for (int x = 0; x < pixelsFiltered[y].length; x++) {
           final double dx = maskDX.apply(pixelsFiltered, x, y);
           final double dy = maskDY.apply(pixelsFiltered, x, y);
-          // TODO: Test
+          borderMagnitudes[y][x] = Math.sqrt(dx * dx + dy * dy);
+          // TODO: Test degree calc
           borderDirections[y][x] = dx != 0 ? (toDegrees(atan2(dy, dx)) + 360) % 360 : 0.0;
         }
       }
 
-      // FIXME: this NonMaximalSuppression should be applied to the magnitude matrix, not de filtered one directly.
-      final double[][] borderMagnitudes = NonMaximalSuppression.apply(pixelsFiltered, borderDirections);
+      // TODO: Hacer q NonMaximalSuppression modifique la matriz?
+      final double[][] suppressedBorderMagnitudes = NonMaximalSuppression
+          .apply(borderMagnitudes, borderDirections);
 
-      images[i++] = HysteresisThreshold.INSTANCE.apply(borderMagnitudes);
+      images[i++] = HysteresisThreshold.INSTANCE.apply(suppressedBorderMagnitudes);
     }
 
     return and(images);

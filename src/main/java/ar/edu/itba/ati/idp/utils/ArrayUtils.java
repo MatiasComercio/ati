@@ -149,6 +149,24 @@ public abstract class ArrayUtils {
 //    return false;
 //  }
 
+  public static boolean allMatchAround(final double[][] m, final int x, final int y,
+      final EnumSet<DegreeDirection> directions, final DoublePredicate predicate) {
+    final boolean[] testResult = new boolean[]{true};
+    for (final DegreeDirection direction : directions) {
+      direction.forEachValueInDirection(m, x, y, v -> {
+        if (!predicate.test(v)) {
+          testResult[0] = false;
+        }
+      });
+
+      if (!testResult[0]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   public static boolean anyMatchAround(final double[][] m, final int x, final int y,
       final DoublePredicate predicate, final EnumSet<DegreeDirection> directions) {
     for (final DegreeDirection direction : directions) {
@@ -217,6 +235,26 @@ public abstract class ArrayUtils {
     return rangeArray.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
+  public static void forEachAround(final double[][] m, final int x, final int y,
+      final EnumSet<DegreeDirection> directions, final Array2DPositionConsumer consumer) {
+    for (final DegreeDirection direction : directions) {
+      direction.forEachPresent(m, x, y, consumer);
+    }
+  }
+
+  public static <T> void forEachAround(final T[][] m, final int x, final int y,
+      final EnumSet<DegreeDirection> directions, final Array2DPositionConsumer consumer) {
+    for (final DegreeDirection direction : directions) {
+      direction.forEachPresent(m, x, y, consumer);
+    }
+  }
+
+  @FunctionalInterface
+  public interface Array2DPositionConsumer {
+
+    void accept(final int x, final int y);
+  }
+
   public enum DegreeDirection {
     DEGREE_0(Direction.W, Direction.E),
     DEGREE_45(Direction.SW, Direction.NE),
@@ -249,6 +287,18 @@ public abstract class ArrayUtils {
       toDirection.getValueInDirection(matrix, x, y).ifPresent(consumer);
     }
 
+    public <T> void forEachPresent(final T[][] matrix, final int x, final int y,
+        final Array2DPositionConsumer consumer) {
+      fromDirection.ifPresent(matrix, x, y, consumer);
+      toDirection.ifPresent(matrix, x, y, consumer);
+    }
+
+    public void forEachPresent(final double[][] matrix, final int x, final int y,
+        final Array2DPositionConsumer consumer) {
+      fromDirection.ifPresent(matrix, x, y, consumer);
+      toDirection.ifPresent(matrix, x, y, consumer);
+    }
+
     public static DegreeDirection fromDegree(double degree) {
       if (degree < 0 || degree > 360) {
         throw new IllegalArgumentException("Invalid degree");
@@ -279,14 +329,14 @@ public abstract class ArrayUtils {
   }
 
   public enum Direction {
-    // (y, x)
+    // (x, y)
     NW(-1, -1),
-    N(-1, 0),
-    NE(-1, +1),
-    W(0, -1),
-    E(0, +1),
-    SW(+1, -1),
-    S(+1, 0),
+    N(0, -1),
+    NE(+1, -1),
+    W(-1, 0),
+    E(+1, 0),
+    SW(-1, +1),
+    S(0, +1),
     SE(+1, +1);
 
     private final int xValue;
@@ -301,8 +351,7 @@ public abstract class ArrayUtils {
       final int desiredY = y + yValue;
       final int desiredX = x + xValue;
 
-      if (desiredY < 0 || desiredY >= matrix.length || desiredX < 0
-          || desiredX >= matrix[desiredY].length) {
+      if (isOutsideMatrix(matrix, desiredX, desiredY)) {
         return OptionalDouble.empty();
       }
 
@@ -313,12 +362,47 @@ public abstract class ArrayUtils {
       final int desiredY = y + yValue;
       final int desiredX = x + xValue;
 
-      if (desiredY < 0 || desiredY >= matrix.length || desiredX < 0
-          || desiredX >= matrix[desiredY].length) {
+      if (isOutsideMatrix(matrix, desiredX, desiredY)) {
         return Optional.empty();
       }
 
       return Optional.ofNullable(matrix[desiredY][desiredX]);
+    }
+
+    public void ifPresent(final double[][] matrix, final int x, final int y,
+        final Array2DPositionConsumer consumer) {
+      final int desiredY = y + yValue;
+      final int desiredX = x + xValue;
+
+      if (isOutsideMatrix(matrix, desiredX, desiredY)) {
+        return;
+      }
+
+      consumer.accept(desiredX, desiredY);
+    }
+
+    public <T> void ifPresent(final T[][] matrix, final int x, final int y,
+        final Array2DPositionConsumer consumer) {
+      final int desiredY = y + yValue;
+      final int desiredX = x + xValue;
+
+      if (isOutsideMatrix(matrix, desiredX, desiredY)) {
+        return;
+      }
+
+      consumer.accept(desiredX, desiredY);
+    }
+
+    private static <T> boolean isOutsideMatrix(final T[][] matrix, final int desiredX,
+        final int desiredY) {
+      return desiredY < 0 || desiredY >= matrix.length || desiredX < 0
+          || desiredX >= matrix[desiredY].length;
+    }
+
+    private static boolean isOutsideMatrix(final double[][] matrix, final int desiredX,
+        final int desiredY) {
+      return desiredY < 0 || desiredY >= matrix.length || desiredX < 0
+          || desiredX >= matrix[desiredY].length;
     }
   }
 }

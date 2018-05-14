@@ -11,7 +11,7 @@ import ar.edu.itba.ati.idp.ui.component.InputExtractors;
 import ar.edu.itba.ati.idp.ui.component.Showable;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
 import java.util.Optional;
-import javafx.scene.shape.Rectangle;
+import javafx.geometry.Rectangle2D;
 
 public class HoughMethodForCirclesUI implements Showable {
   private static final String STAGE_TITLE = "Hough Method - Circles";
@@ -87,20 +87,20 @@ public class HoughMethodForCirclesUI implements Showable {
   public void show(final String imageFileName) {
     if (workspace == null) return;
     showableUI.show(imageFileName);
-    workspace.getOpImageFile().ifPresent(imageFile -> showWithDefaults(imageFile, workspace.getSelectedArea()));
+    workspace.getOpImageFile().ifPresent(imageFile -> showWithDefaults(imageFile, workspace.getSelection()));
   }
 
   private void showWithDefaults(final ImageFile imageFile,
                                 // Nasty but useful
                                 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-                                final Optional<Rectangle> opRectangle) {
+                                final Optional<Rectangle2D> opRectangle) {
     // Set default values.
     final ImageMatrix imageMatrix = imageFile.getImageMatrix();
     final double maxRadius = max(imageMatrix.getWidth(), imageMatrix.getHeight());
-    final Rectangle rectangle = opRectangle.orElse(new Rectangle(0, 0, imageMatrix.getWidth(), imageMatrix.getHeight()));
-    final double aStart = rectangle.getX();
+    final Rectangle2D rectangle = opRectangle.orElse(new Rectangle2D(0, 0, imageMatrix.getWidth(), imageMatrix.getHeight()));
+    final double aStart = rectangle.getMinX();
     final double aEnd = aStart + rectangle.getWidth();
-    final double bStart = rectangle.getY();
+    final double bStart = rectangle.getMinY();
     final double bEnd = bStart + rectangle.getHeight();
     aStartIE.setValue(aStart);
     aStepIE.setValue(DEFAULT_STEP);

@@ -1,5 +1,8 @@
 package ar.edu.itba.ati.idp.function.filter;
 
+import static ar.edu.itba.ati.idp.function.filter.SusanFilter.Type.BORDER;
+import static ar.edu.itba.ati.idp.function.filter.SusanFilter.Type.CORNER;
+import static ar.edu.itba.ati.idp.function.filter.SusanFilter.Type.NONE;
 import static java.lang.Math.abs;
 
 import ar.edu.itba.ati.idp.function.filter.mask.nonlinear.SusanMask;
@@ -7,19 +10,23 @@ import ar.edu.itba.ati.idp.function.filter.mask.nonlinear.SusanMask;
 // Useful: https://users.fmrib.ox.ac.uk/~steve/susan/susan/susan.html
 public final class SusanFilter extends Filter<SusanMask> { // FIXME: should IMPLEMENT ColorOver ... Or 2DTo3D, depending whether it accepts or not color images.
 
-  private static final double THRESHOLD = 0.10; // FIXME: threshold should be part of Type, & Type should be package-private.
-
   public enum Type {
-    NONE(0.0), BORDER(0.5), CORNER(0.75);
+    NONE(0.0, 0.0), BORDER(0.5, 0.05), CORNER(0.75, 0.1);
 
     private final double doubleValue;
+    private double threshold;
 
-    Type(final double doubleValue) {
+    Type(final double doubleValue, final double threshold) {
       this.doubleValue = doubleValue;
+      this.threshold = threshold;
     }
 
     public double doubleValue() {
       return doubleValue;
+    }
+
+    private double threshold() {
+      return threshold;
     }
   }
 
@@ -37,12 +44,12 @@ public final class SusanFilter extends Filter<SusanMask> { // FIXME: should IMPL
 
     for (int y = 0; y < pixelsAfterSusanMask.length; y++) {
       for (int x = 0; x < pixelsAfterSusanMask[y].length; x++) {
-        if (abs(pixelsAfterSusanMask[y][x] - Type.BORDER.doubleValue()) < THRESHOLD) {
-          pixelsAfterSusanMask[y][x] = Type.BORDER.doubleValue();
-        } else if (abs(pixelsAfterSusanMask[y][x] - Type.CORNER.doubleValue()) < THRESHOLD) {
-          pixelsAfterSusanMask[y][x] = Type.CORNER.doubleValue();
+        if (abs(pixelsAfterSusanMask[y][x] - BORDER.doubleValue()) < BORDER.threshold()) {
+          pixelsAfterSusanMask[y][x] = BORDER.doubleValue();
+        } else if (abs(pixelsAfterSusanMask[y][x] - CORNER.doubleValue()) < CORNER.threshold()) {
+          pixelsAfterSusanMask[y][x] = CORNER.doubleValue();
         } else {
-          pixelsAfterSusanMask[y][x] = Type.NONE.doubleValue();
+          pixelsAfterSusanMask[y][x] = NONE.doubleValue();
         }
       }
     }

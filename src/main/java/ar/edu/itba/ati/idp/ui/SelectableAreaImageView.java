@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
@@ -204,7 +205,13 @@ public class SelectableAreaImageView extends Group {
     node.removeEventHandler(MouseEvent.MOUSE_DRAGGED, onMouseDraggedEventHandler);
   }
 
-  public Optional<Rectangle> getSelectionRectangle() {
-    return Optional.ofNullable(selectionRectangle);
+  // TODO: Add IntRectangle2D?
+  public Optional<Rectangle2D> getSelectionRectangle() {
+    if (selectionRectangle == null) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new Rectangle2D(selectionRectangle.getX(), selectionRectangle.getY(),
+        selectionRectangle.getWidth(), selectionRectangle.getHeight()));
   }
 }
