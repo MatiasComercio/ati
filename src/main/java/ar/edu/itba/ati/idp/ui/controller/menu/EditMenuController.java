@@ -1,5 +1,6 @@
 package ar.edu.itba.ati.idp.ui.controller.menu;
 
+import ar.edu.itba.ati.idp.function.Compressor;
 import ar.edu.itba.ati.idp.function.Normalizer;
 import ar.edu.itba.ati.idp.function.point.DynamicRangeCompression;
 import ar.edu.itba.ati.idp.function.point.Negative;
@@ -171,6 +172,11 @@ public class EditMenuController extends Menu {
       return;
     }
     workspace.applyToImage(Normalizer.INSTANCE);
+  }
+
+  @FXML
+  private void handleCompress() {
+    workspace.getOpImageFile().ifPresent(imageFile -> workspace.applyToImage(Compressor.INSTANCE));
   }
 
   // TODO: improve

@@ -17,7 +17,7 @@ public class CircleHoughMethod extends HoughMethod {
   public static CircleHoughMethod newInstance(final double aStart, final double aStep, final double aEnd,
                                               final double bStart, final double bStep, final double bEnd,
                                               final double radioStart, final double radioStep, final double radioEnd,
-                                              final double epsilon) {
+                                              final double epsilon, final double acceptancePercentage) {
     validateRange("a", aStart, aEnd);
     validateRange("b", bStart, bEnd);
     validateRange("radio", radioStart, radioEnd);
@@ -35,7 +35,7 @@ public class CircleHoughMethod extends HoughMethod {
       }
     }
 
-    return new CircleHoughMethod(new AccumMatrix(accumCells, epsilon));
+    return new CircleHoughMethod(new AccumMatrix(accumCells, epsilon, acceptancePercentage));
   }
 
   private static void validateRange(final String varName, final double start, final double end) {

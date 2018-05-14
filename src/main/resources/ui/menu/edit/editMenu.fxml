@@ -30,4 +30,5 @@
   <FilterMenuController fx:id="filterMenu"/>
   <SeparatorMenuItem mnemonicParsing="false"/>
   <MenuItem onAction="#handleNormalize" mnemonicParsing="false" text="Normalize"/>
+  <MenuItem onAction="#handleCompress" mnemonicParsing="false" text="Compress"/>
 </fx:root>

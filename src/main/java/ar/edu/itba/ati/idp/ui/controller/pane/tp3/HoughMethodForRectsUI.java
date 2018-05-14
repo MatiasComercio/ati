@@ -1,5 +1,6 @@
 package ar.edu.itba.ati.idp.ui.controller.pane.tp3;
 
+import static java.lang.Math.ceil;
 import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
 
@@ -22,6 +23,14 @@ public class HoughMethodForRectsUI implements Showable {
   private static final String THETA_STEP = "Theta Step";
   private static final String THETA_END = "Theta End";
   private static final String EPSILON = "Epsilon";
+  private static final String ACCEPTANCE_PERCENTAGE = "Acceptance Percentage";
+  private static final String ACCEPTANCE_PERCENTAGE_PROMPT = "min: 0.0; max: 1.0";
+
+  private static final double BOUND_DEGREE = 90.0;
+  private static final double DEFAULT_EPSILON = .9;
+  private static final double DEFAULT_ACCEPTANCE_PERCENTAGE = .8;
+  private static final double RHO_DEFAULT_STEP = 1.0;
+  private static final double THETA_DEFAULT_STEP = 45.0;
 
   private final Showable showableUI;
   private final Field<Double> rhoStartIE;
@@ -31,29 +40,32 @@ public class HoughMethodForRectsUI implements Showable {
   private final Field<Double> thetaStepIE;
   private final Field<Double> thetaEndIE;
   private final Field<Double> epsilonIE;
+  private final Field<Double> acceptancePercentageIE;
 
   private Workspace workspace;
 
   private HoughMethodForRectsUI(final HoughMethodForRectsApplier applier) {
     final InputExtractor<Double> doubleIE = InputExtractors.getDoubleIE();
+    final InputExtractor<Double> positiveDoubleIE = InputExtractors.getPositiveDoubleIE();
     rhoStartIE = Field.newInstance(RHO_START, DOUBLE_PROMPT, doubleIE);
-    rhoStepIE = Field.newInstance(RHO_STEP, DOUBLE_PROMPT, doubleIE);
+    rhoStepIE = Field.newInstance(RHO_STEP, DOUBLE_PROMPT, positiveDoubleIE);
     rhoEndIE = Field.newInstance(RHO_END, DOUBLE_PROMPT, doubleIE);
     thetaStartIE = Field.newInstance(THETA_START, DOUBLE_PROMPT, doubleIE);
-    thetaStepIE = Field.newInstance(THETA_STEP, DOUBLE_PROMPT, doubleIE);
+    thetaStepIE = Field.newInstance(THETA_STEP, DOUBLE_PROMPT, positiveDoubleIE);
     thetaEndIE = Field.newInstance(THETA_END, DOUBLE_PROMPT, doubleIE);
     epsilonIE = Field.newInstance(EPSILON, DOUBLE_PROMPT, doubleIE);
+    acceptancePercentageIE = Field.newInstance(ACCEPTANCE_PERCENTAGE, ACCEPTANCE_PERCENTAGE_PROMPT, doubleIE);
 
     //noinspection CodeBlock2Expr
     this.showableUI = FloatingPane.newInstance(STAGE_TITLE, (workspace1, imageFile) -> {
       applier.apply(workspace1, imageFile,
                     rhoStartIE.getValue(), rhoStepIE.getValue(), rhoEndIE.getValue(),
                     thetaStartIE.getValue(), thetaStepIE.getValue(), thetaEndIE.getValue(),
-                    epsilonIE.getValue());
+                    epsilonIE.getValue(), acceptancePercentageIE.getValue());
     }, new Field[][] { // Three visual rows of input elements
         {rhoStartIE, rhoStepIE, rhoEndIE},
         {thetaStartIE, thetaStepIE, thetaEndIE},
-        {epsilonIE}
+        {epsilonIE, acceptancePercentageIE}
     });
   }
 
@@ -66,19 +78,22 @@ public class HoughMethodForRectsUI implements Showable {
     showableUI.show(imageFileName);
 
     if (workspace == null) return;
-    workspace.getOpImageFile().ifPresent(imageFile -> {
-      // Set default values, if none set.
-      final ImageMatrix imageMatrix = imageFile.getImageMatrix();
-      final int d = max(imageMatrix.getWidth(), imageMatrix.getHeight());
-      final double diagonal = sqrt(2) * d;
-      final double degree = 90.0;
-      final double defaultEpsilon = .9;
-      if (rhoStartIE.getValue() == null) rhoStartIE.setValue(-diagonal);
-      if (rhoEndIE.getValue() == null) rhoEndIE.setValue(diagonal);
-      if (thetaStartIE.getValue() == null) thetaStartIE.setValue(-degree);
-      if (thetaEndIE.getValue() == null) thetaEndIE.setValue(degree);
-      if (epsilonIE.getValue() == null) epsilonIE.setValue(defaultEpsilon);
-    });
+    workspace.getOpImageFile().ifPresent(this::setDefaults);
+  }
+
+  private void setDefaults(final ImageFile imageFile) {
+    // Set default values.
+    final ImageMatrix imageMatrix = imageFile.getImageMatrix();
+    final int d = max(imageMatrix.getWidth(), imageMatrix.getHeight());
+    final double diagonal = ceil(sqrt(2) * d); // So as to not show all decimals.
+    rhoStartIE.setValue(-diagonal);
+    rhoStepIE.setValue(RHO_DEFAULT_STEP);
+    rhoEndIE.setValue(diagonal);
+    thetaStartIE.setValue(-BOUND_DEGREE);
+    thetaStepIE.setValue(THETA_DEFAULT_STEP);
+    thetaEndIE.setValue(BOUND_DEGREE);
+    epsilonIE.setValue(DEFAULT_EPSILON);
+    acceptancePercentageIE.setValue(DEFAULT_ACCEPTANCE_PERCENTAGE);
   }
 
   @Override
@@ -91,6 +106,6 @@ public class HoughMethodForRectsUI implements Showable {
     void apply(final Workspace workspace, final ImageFile imageFile,
                final double rhoStart, final double rhoStep, final double rhoEnd,
                final double thetaStart, final double thetaStep, final double thetaEnd,
-               final double epsilon);
+               final double epsilon, final double acceptancePercentage);
   }
 }

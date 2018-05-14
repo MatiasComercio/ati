@@ -32,8 +32,12 @@ public class TP3MenuController extends Menu {
       workspace.applyToImage(SusanFilter.newInstance(threshold));
     });
     houghMethodForRectsUI = HoughMethodForRectsUI.newInstance((workspace, imageFile,
-                                                               rhoStart, rhoStep, rhoEnd, thetaStart, thetaStep, thetaEnd, epsilon) -> {
-      workspace.applyToImage(RectHoughMethod.newInstance(rhoStart, rhoStep, rhoEnd, thetaStart, thetaStep, thetaEnd, epsilon));
+                                                               rhoStart, rhoStep, rhoEnd,
+                                                               thetaStart, thetaStep, thetaEnd,
+                                                               epsilon, acceptancePercentage) -> {
+      workspace.applyToImage(RectHoughMethod.newInstance(rhoStart, rhoStep, rhoEnd,
+                                                         thetaStart, thetaStep, thetaEnd,
+                                                         epsilon, acceptancePercentage));
     });
   }
 

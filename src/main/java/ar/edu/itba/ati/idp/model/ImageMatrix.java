@@ -338,34 +338,44 @@ public class ImageMatrix {
       compressedBands = pixels[0];
     }
 
-    return merge(function.apply(compressedBands));
+    return overlap(function.apply(compressedBands));
   }
 
-  private ImageMatrix merge(final double[][][] otherPixels) {
-    // Merge policy: 1. Take the max pixel of both; 2. Create an image with the max #bands of both.
+  private ImageMatrix overlap(final double[][][] otherPixels) {
+    /*
+     * Merge policy:
+     * 1. If > 0, take the pixel from other pixel; otherwise, take it from this pixels;
+     * 2. Create an image with the max #bands of both.
+     */
 
     // As called internally, it's assumed that both pixel matrices are of the same size.
     final Type otherType = getTypeFor(otherPixels);
     final Type newType = type.numBands > otherType.numBands ? type : otherType;
-    final double[][][] newPixels = new double[newType.numBands][width][height];
+    final double[][][] newPixels = new double[newType.numBands][height][width];
     for (final Band band : newType.bands) {
       final int bandI = band.bandIndex;
-      for (int y = 0; y < pixels.length; y++) {
-        for (int x = 0; x < pixels[y].length; x++) {
-          final double newPixel;
-          if (bandI >= type.numBands) { // `other` pixel should be defined.
-            newPixel = otherPixels[bandI][y][x];
-          } else if (bandI >= otherType.numBands) { // `this` pixel should be defined.
-            newPixel = pixels[bandI][y][x];
-          } else { // both (`this` & `other`) pixels are defined => take the max of them.
-            newPixel = max(pixels[bandI][y][x], otherPixels[bandI][y][x]);
+      for (int y = 0; y < newPixels[bandI].length; y++) {
+        for (int x = 0; x < newPixels[bandI][y].length; x++) {
+          double newPixel = bandI < otherType.numBands && otherPixels[bandI][y][x] > 0 ? otherPixels[bandI][y][x] : -1;
+          if (newPixel < 0 && notDefinedForAnyOtherBand(otherPixels, x, y, otherType, newType)) {
+            newPixel = bandI < type.numBands ? pixels[bandI][y][x] : pixels[type.numBands - 1][y][x];
           }
-          newPixels[bandI][y][x] = newPixel;
+          newPixels[bandI][y][x] = newPixel < 0 ? 0 : newPixel;
         }
       }
     }
 
     return new ImageMatrix(newPixels, newType);
+  }
+
+  private boolean notDefinedForAnyOtherBand(final double[][][] otherPixels, final int x,
+                                            final int y, final Type otherType, final Type newType) {
+    for (final Band band : newType.bands) {
+      if (band.bandIndex < otherType.numBands && otherPixels[band.bandIndex][y][x] > 0) {
+        return false; // i.e.: there's a pixel defined for at least one band
+      }
+    }
+    return true;
   }
 
 
@@ -513,6 +523,10 @@ public class ImageMatrix {
     public List<Band> toBands() {
       return bands;
     }
+
+    public int getNumBands() {
+      return numBands;
+    }
   }
   // ========================= \Type ========================= //
 
@@ -537,6 +551,10 @@ public class ImageMatrix {
 
     public String getHexColor() {
       return hexColor;
+    }
+
+    public int getBandIndex() {
+      return bandIndex;
     }
 
     @Override

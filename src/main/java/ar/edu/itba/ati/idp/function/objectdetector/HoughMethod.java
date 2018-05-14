@@ -3,10 +3,12 @@ package ar.edu.itba.ati.idp.function.objectdetector;
 import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.objectdetector.HoughMethod.AbstractAccumCell.Point;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
-import ar.edu.itba.ati.idp.utils.ArrayUtils;
+import ar.edu.itba.ati.idp.model.ImageMatrix.Band;
+import ar.edu.itba.ati.idp.model.ImageMatrix.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class HoughMethod implements ColorOverUniquePixelsBandOperator {
   private final AccumMatrix accumMatrix;
@@ -17,45 +19,47 @@ public class HoughMethod implements ColorOverUniquePixelsBandOperator {
 
   @Override
   public final double[][][] apply(final double[][] pixels) {
-    // Require thresholdized image => will be validate during the first pixel's iteration.
-
-    /*
-     * Validating that the rho is withing bounds makes no sense, as the only cost of this is
-     * extra iterations (i.e., computation cost), which is not our fault.
-     * This cannot generate any kind of strange behaviour on us => it won't be validated.
-     */
-
+    // Normalizing as the compression may result in pixel values exceeding the max value.
     // For each pixel, apply the accum matrix logic.
-    for (int y = 0; y < pixels.length; y++) {
-      for (int x = 0; x < pixels[y].length; x++) {
-        final int pixel = (int) pixels[y][x];
-        if (pixel != ImageMatrix.getMaxNormalizedPixelValue()) {
-          if (pixel != 0) { // Neither a white nor a black pixel => not binary pixels => error.
-            throw new IllegalArgumentException("Pixel matrix is not binary");
-          }
+    ImageMatrix.normalize(pixels, (normalizedPixel, x, y) -> {
+      // Require binary image => will be validate during the first pixel's iteration.
 
-          continue; // Not a white pixel
+      /*
+       * Validating that the rho is withing bounds makes no sense, as the only cost of this is
+       * extra iterations (i.e., computation cost), which is not our fault.
+       * This cannot generate any kind of strange behaviour on us => it won't be validated.
+       */
+
+      final int pixel = normalizedPixel;
+      if (pixel != ImageMatrix.getMaxNormalizedPixelValue()) {
+        if (pixel != 0) { // Neither a white nor a black pixel => not binary pixels => error.
+          throw new IllegalArgumentException("Pixel matrix is not binary. Pixel value: double: " + pixels[y][x] + "; int: " + pixel);
         }
 
-        final Point pixelPoint = new Point(x, y);
-        accumMatrix.process(pixelPoint);
+        return; // Not a white pixel
       }
-    }
+
+      final Point pixelPoint = new Point(x, y);
+      accumMatrix.process(pixelPoint);
+    });
 
     // Plot the found shapes.
-    final double[][] shapesPixelMatrix = ArrayUtils.newWithSizeOf(pixels);
+    final double[][][] shapesPixelMatrix = new double[Type.BYTE_RGB.getNumBands()][pixels.length][pixels[0].length];
     accumMatrix.plotIn(shapesPixelMatrix);
-    return new double[][][] {shapesPixelMatrix};
+    return shapesPixelMatrix;
   }
 
   protected static class AccumMatrix {
     private final List<AbstractAccumCell> accumCells;
     private final double epsilon;
+    private final double acceptancePercentage;
     private int maxAccumValue;
 
-    protected AccumMatrix(final List<AbstractAccumCell> accumCells, final double epsilon) {
+    protected AccumMatrix(final List<AbstractAccumCell> accumCells, final double epsilon,
+                          final double acceptancePercentage) {
       this.accumCells = accumCells;
       this.epsilon = epsilon;
+      this.acceptancePercentage = acceptancePercentage;
       this.maxAccumValue = 0;
     }
 
@@ -74,15 +78,20 @@ public class HoughMethod implements ColorOverUniquePixelsBandOperator {
       }
     }
 
-    private void plotIn(final double[][] shapesPixelMatrix) {
+    private void plotIn(final double[][][] shapesPixelMatrix) {
       // Plot the found shapes, only the ones above the 80% of the max accum registered.
-      accumCells.forEach(aCell -> plotCellIn(shapesPixelMatrix, aCell));
-    }
-
-    private void plotCellIn(final double[][] shapesPixelMatrix, final AbstractAccumCell aCell) {
-      if (aCell.getNumMatchingPixelPoints() * .8 > maxAccumValue) {
-        for (final Point point : aCell.matchingPixelPoints) {
-          shapesPixelMatrix[point.y][point.x] = ImageMatrix.getMaxNormalizedPixelValue();
+      final List<AbstractAccumCell> filteredAccumCells = accumCells.stream()
+          .filter(aCell -> aCell.getNumMatchingPixelPoints() > maxAccumValue * acceptancePercentage)
+          .collect(Collectors.toList());
+      final int colorBandIndex = Band.RED.getBandIndex();
+      for (int y = 0; y < shapesPixelMatrix[colorBandIndex].length; y++) {
+        for (int x = 0; x < shapesPixelMatrix[colorBandIndex][y].length; x++) {
+          final Point point = new Point(x, y);
+          filteredAccumCells.forEach(aCell -> {
+            if (aCell.doesEquationMatchPixelPoint(point, epsilon)) {
+              shapesPixelMatrix[colorBandIndex][point.y][point.x] = ImageMatrix.getMaxNormalizedPixelValue();
+            }
+          });
         }
       }
     }

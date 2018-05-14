@@ -5,6 +5,8 @@ import static java.lang.Math.sqrt;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
@@ -208,12 +210,11 @@ public abstract class ArrayUtils {
 
   /** Inclusive end */
   public static double[] newRangedArray(final double start, final double step, final double end) {
-    final int length = (int) ((end - start) / step) + 1; // Floor operation; then +1 for inclusive end
-    final double[] rangeArray = new double[length];
-    for (int i = 0; i < rangeArray.length; i++) {
-      rangeArray[i] = start + i * step;
+    final List<Double> rangeArray = new LinkedList<>();
+    for (double curr = start; curr <= end; curr += step) {
+      rangeArray.add(curr);
     }
-    return rangeArray;
+    return rangeArray.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
   public enum DegreeDirection {
