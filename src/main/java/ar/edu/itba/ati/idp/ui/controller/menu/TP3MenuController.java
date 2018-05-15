@@ -1,12 +1,12 @@
 package ar.edu.itba.ati.idp.ui.controller.menu;
 
-import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.CannyFilter;
 import ar.edu.itba.ati.idp.function.filter.SusanFilter;
 import ar.edu.itba.ati.idp.function.objectdetector.CircleHoughMethod;
 import ar.edu.itba.ati.idp.function.objectdetector.RectHoughMethod;
 import ar.edu.itba.ati.idp.ui.component.Showable;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
+import ar.edu.itba.ati.idp.ui.controller.pane.tp3.ActiveContoursMethodUI;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.CannyBorderDetectorUI;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.HoughMethodForCirclesUI;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.HoughMethodForRectsUI;
@@ -84,10 +84,7 @@ public class TP3MenuController extends Menu {
 
   @FXML
   public void handleActiveContoursMethod() {
-  }
-
-  private void apply(final UniquePixelsBandOperator op) {
-    workspace.getOpImageFile().ifPresent(imgF -> workspace.applyToImage(op));
+    show(ActiveContoursMethodUI.newInstance(workspace));
   }
 
   private void show(final Showable showable) {
