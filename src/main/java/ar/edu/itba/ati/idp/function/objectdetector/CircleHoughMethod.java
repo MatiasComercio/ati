@@ -39,9 +39,11 @@ public class CircleHoughMethod extends HoughMethod {
   }
 
   private static void validateRange(final String varName, final double start, final double end) {
-    throw new IllegalArgumentException(
-        format("Invalid %s parameters: aStart should be <= aEnd, but was: %f < %f", varName, start, end)
-    );
+    if (start > end) {
+      throw new IllegalArgumentException(
+          format("Invalid %s parameters: aStart should be <= aEnd, but was: %f < %f", varName, start, end)
+      );
+    }
   }
 
   private static class CircleAccumCell extends AbstractAccumCell {
@@ -59,7 +61,7 @@ public class CircleHoughMethod extends HoughMethod {
     @Override
     protected boolean doesEquationMatchPixelPoint(final Point pixelPoint, final double epsilon) {
       // ximportant: check if this `y` sign should be inverted or not...
-      return abs(radio - pow((pixelPoint.getX() - a), 2) - pow((pixelPoint.getY() - b), 2)) < epsilon;
+      return abs(pow(radio, 2) - pow((pixelPoint.getX() - a), 2) - pow((pixelPoint.getY() - b), 2)) < epsilon;
     }
   }
 }

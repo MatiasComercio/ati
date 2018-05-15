@@ -26,6 +26,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,5 +263,9 @@ public class Workspace {
 
   public void openOriginalInNewWorkspace() {
     getOpImageFile().ifPresent(theImageFile -> filesToImageFiles(Collections.singletonList(theImageFile.getOriginalFile())).forEach(Workspace::newInstance));
+  }
+
+  public Optional<Rectangle> getSelectedArea() {
+    return imagePane.getSelectedArea();
   }
 }

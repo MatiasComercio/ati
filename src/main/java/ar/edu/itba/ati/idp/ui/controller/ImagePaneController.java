@@ -1,10 +1,12 @@
 package ar.edu.itba.ati.idp.ui.controller;
 
 import ar.edu.itba.ati.idp.ui.SelectableAreaImageView;
+import java.util.Optional;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Rectangle;
 
 public class ImagePaneController extends ScrollPane {
 
@@ -31,5 +33,9 @@ public class ImagePaneController extends ScrollPane {
   public void unloadImage() {
     this.selectableAreaImageView.clearSelection();
     this.imageView.setImage(null);
+  }
+
+  public Optional<Rectangle> getSelectedArea() {
+    return selectableAreaImageView.getSelectionRectangle();
   }
 }

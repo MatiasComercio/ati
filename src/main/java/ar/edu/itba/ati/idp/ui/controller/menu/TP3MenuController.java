@@ -3,10 +3,12 @@ package ar.edu.itba.ati.idp.ui.controller.menu;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.CannyFilter;
 import ar.edu.itba.ati.idp.function.filter.SusanFilter;
+import ar.edu.itba.ati.idp.function.objectdetector.CircleHoughMethod;
 import ar.edu.itba.ati.idp.function.objectdetector.RectHoughMethod;
 import ar.edu.itba.ati.idp.ui.component.Showable;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.CannyBorderDetectorUI;
+import ar.edu.itba.ati.idp.ui.controller.pane.tp3.HoughMethodForCirclesUI;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.HoughMethodForRectsUI;
 import ar.edu.itba.ati.idp.ui.controller.pane.tp3.SusanBorderAndCornerDetectorUI;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
@@ -19,6 +21,7 @@ public class TP3MenuController extends Menu {
   private final Showable cannyBorderDetectorUI;
   private final Showable susanBorderAndCornerDetectorUI;
   private final Showable houghMethodForRectsUI;
+  private final Showable houghMethodForCirclesUI;
 
   private Workspace workspace;
 
@@ -39,6 +42,16 @@ public class TP3MenuController extends Menu {
                                                          thetaStart, thetaStep, thetaEnd,
                                                          epsilon, acceptancePercentage));
     });
+    houghMethodForCirclesUI = HoughMethodForCirclesUI.newInstance((workspace, imageFile,
+                                                                   aStart, aStep, aEnd,
+                                                                   bStart, bStep, bEnd,
+                                                                   radiusStart, radiusStep, radiusEnd,
+                                                                   epsilon, acceptancePercentage) -> {
+      workspace.applyToImage(CircleHoughMethod.newInstance(aStart, aStep, aEnd,
+                                                           bStart, bStep, bEnd,
+                                                           radiusStart, radiusStep, radiusEnd,
+                                                           epsilon, acceptancePercentage));
+    });
   }
 
   public void setWorkspace(final Workspace workspace) {
@@ -46,6 +59,7 @@ public class TP3MenuController extends Menu {
     cannyBorderDetectorUI.setWorkspace(workspace);
     susanBorderAndCornerDetectorUI.setWorkspace(workspace);
     houghMethodForRectsUI.setWorkspace(workspace);
+    houghMethodForCirclesUI.setWorkspace(workspace);
   }
 
   @FXML
@@ -65,6 +79,7 @@ public class TP3MenuController extends Menu {
 
   @FXML
   public void handleHoughMethodForCircles() {
+    show(houghMethodForCirclesUI);
   }
 
   @FXML
