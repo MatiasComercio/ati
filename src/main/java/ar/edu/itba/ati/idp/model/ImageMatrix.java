@@ -6,10 +6,10 @@ import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.BLUE;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREEN;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.GREY;
 import static ar.edu.itba.ati.idp.model.ImageMatrix.Band.RED;
-import static java.lang.Math.max;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
+import ar.edu.itba.ati.idp.function.ColorOverRawPixelsMatrixOperator;
 import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
@@ -339,6 +339,10 @@ public class ImageMatrix {
     }
 
     return overlap(function.apply(compressedBands));
+  }
+
+  public ImageMatrix apply(final ColorOverRawPixelsMatrixOperator function) {
+    return overlap(function.apply(ArrayUtils.copyOf(pixels)));
   }
 
   private ImageMatrix overlap(final double[][][] otherPixels) {

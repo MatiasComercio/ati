@@ -1,5 +1,6 @@
 package ar.edu.itba.ati.idp.model;
 
+import ar.edu.itba.ati.idp.function.ColorOverRawPixelsMatrixOperator;
 import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.DoubleArray2DUnaryOperator;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
@@ -61,6 +62,10 @@ public class ImageFile {
   }
 
   public void apply(final ColorOverUniquePixelsBandOperator function) {
+    setImageMatrix(imageMatrix.apply(function));
+  }
+
+  public void apply(final ColorOverRawPixelsMatrixOperator function) {
     setImageMatrix(imageMatrix.apply(function));
   }
 

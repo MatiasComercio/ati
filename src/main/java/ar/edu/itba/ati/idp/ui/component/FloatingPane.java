@@ -66,6 +66,15 @@ public class FloatingPane extends VBox implements Showable {
       // As this field is invalid => disable the apply button.
       field.addEventHandler(NEW_INVALID_INPUT.getEventType(), event -> this.applyButton.setDisable(true));
     });
+
+    // This is just to configure the button enabled/disabled
+    if (this.fields.isEmpty()) {
+      applyButton.setDisable(false); // No input to validate
+    } else { // Only enabled if all valid => simulate a text change
+      final Field aField = this.fields.get(0);
+      //noinspection unchecked
+      aField.setValue(aField.getValue() == null ? "" : aField.getValue());
+    }
   }
 
   public static FloatingPane newInstance(final String stageTitle, final ApplyHandler applyHandler,
@@ -116,7 +125,6 @@ public class FloatingPane extends VBox implements Showable {
 
   private Button newButton() {
     final Button applyButton = new Button(CONSTANTS.getApplyButtonText());
-    applyButton.setDisable(true);
     applyButton.setOnAction(this::handleApply);
     return applyButton;
   }

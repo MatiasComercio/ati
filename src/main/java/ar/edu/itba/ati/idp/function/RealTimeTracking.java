@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.DoublePredicate;
 
-public class RealTimeTracking {
+public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
 
   private static final double GAUSS_MASK_SIGMA = 1.0;
 

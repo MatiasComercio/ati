@@ -1,11 +1,17 @@
 package ar.edu.itba.ati.idp.ui.controller.pane.tp3;
 
 import static ar.edu.itba.ati.idp.ui.Constants.CONSTANTS;
+import static java.lang.Math.max;
 
-import ar.edu.itba.ati.idp.function.ColorOverUniquePixelsBandOperator;
+import ar.edu.itba.ati.idp.function.ColorOverRawPixelsMatrixOperator;
+import ar.edu.itba.ati.idp.function.RealTimeTracking;
 import ar.edu.itba.ati.idp.io.ImageLoader;
 import ar.edu.itba.ati.idp.model.ImageFile;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
+import ar.edu.itba.ati.idp.ui.component.Field;
+import ar.edu.itba.ati.idp.ui.component.FloatingPane;
+import ar.edu.itba.ati.idp.ui.component.InputExtractor;
+import ar.edu.itba.ati.idp.ui.component.InputExtractors;
 import ar.edu.itba.ati.idp.ui.component.Showable;
 import ar.edu.itba.ati.idp.ui.controller.Workspace;
 import ar.edu.itba.ati.idp.utils.ResourceLoader;
@@ -30,19 +36,36 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ActiveContoursMethodUI extends HBox implements Showable {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ActiveContoursMethodUI.class);
   private static final String LAYOUT_PATH = "ui/pane/tp3/activeContoursMethodUIPane.fxml";
   private static final String STAGE_TITLE = "Active Contours Method";
   private static final Pattern SEQ_FILE_NAME_PATTERN = Pattern.compile("(\\D*)(\\d*)(\\..*)");
   private static final long MILLIS_TO_NEXT_FRAME = 42; // 24 FPS, as 1 sec = 1000 => 1000/24 ~= 42
 
+  private static final String INT_PROMPT = "1";
+  private static final String X_START = "x Start";
+  private static final String Y_START = "y Start";
+  private static final String WIDTH = "Initial Width";
+  private static final String HEIGHT = "Initial Height";
+  private static final String IT_LIMIT_CYCLE_1 = "Iteration Limit Cycle 1";
+  private static final String IT_LIMIT_CYCLE_2 = "Iteration Limit Cycle 2";
+  private static final int DEFAULT_IT_LIMIT_CYCLE = 100;
+
   private final Stage stage;
-  private final ColorOverUniquePixelsBandOperator method;
   private final Deque<ImageMatrix> prevImageMatrices;
   private final Deque<ImageMatrix> nextImageMatrices;
   private final AnimationTimer animationTimer;
   private final Map<KeyCombination, Button> keyCombinationButtonMap;
+  private final Field<Integer> xStartIE;
+  private final Field<Integer> widthIE;
+  private final Field<Integer> yStartIE;
+  private final Field<Integer> heightIE;
+  private final Field<Integer> itLimitCycle1IE;
+  private final Field<Integer> itLimitCycle2IE;
 
   @FXML
   private Button startButton;
@@ -64,15 +87,23 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
   private ImageMatrix currImageMatrix;
   private boolean isPlayOn;
   private long lastTimePlayed;
+  private RealTimeTracking realTimeTracking;
 
   private ActiveContoursMethodUI() {
     ResourceLoader.INSTANCE.loadCustomFxml(LAYOUT_PATH, this);
     this.stage = newState();
-    this.method = m -> new double[][][] {m, m, m}; // FIXME: replace with real method call
     this.prevImageMatrices = new LinkedList<>();
     this.nextImageMatrices = new LinkedList<>();
     this.animationTimer = newAnimationTimer();
     this.keyCombinationButtonMap = setKeyCombinationButtonMap();
+
+    final InputExtractor<Integer> intIE = InputExtractors.getNonNegativeIntIE();
+    this.xStartIE = Field.newInstance(X_START, INT_PROMPT, intIE);
+    this.widthIE = Field.newInstance(WIDTH, INT_PROMPT, intIE);
+    this.yStartIE = Field.newInstance(Y_START, INT_PROMPT, intIE);
+    this.heightIE = Field.newInstance(HEIGHT, INT_PROMPT, intIE);
+    this.itLimitCycle1IE = Field.newInstance(IT_LIMIT_CYCLE_1, INT_PROMPT, intIE);
+    this.itLimitCycle2IE = Field.newInstance(IT_LIMIT_CYCLE_2, INT_PROMPT, intIE);
   }
 
   private Stage newState() {
@@ -137,13 +168,36 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
   public void show(final String imageName) {
     if (originalWorkspace == null) return;
     originalWorkspace.getOpImageFile().ifPresent(imageFile -> {
-      populateData(imageFile);
-      configureHandlers();
-      showWindow(imageName);
+      final ImageMatrix imageMatrix = imageFile.getImageMatrix();
+      final Rectangle2D rectangle = originalWorkspace.getSelection().orElse(new Rectangle2D(0, 0, imageMatrix.getWidth(), imageMatrix.getHeight()));
+      xStartIE.setValue((int) rectangle.getMinX());
+      yStartIE.setValue((int) rectangle.getMinY());
+      widthIE.setValue((int) rectangle.getWidth());
+      heightIE.setValue((int) rectangle.getHeight());
+      itLimitCycle1IE.setValue(DEFAULT_IT_LIMIT_CYCLE);
+      itLimitCycle2IE.setValue(DEFAULT_IT_LIMIT_CYCLE);
+
+      // Pane to grab parameters, and when applied => active contours method activation.
+      final FloatingPane floatingPane = FloatingPane.newInstance(STAGE_TITLE, (workspace, __imageFile__) -> {
+        realTimeTracking = new RealTimeTracking(itLimitCycle1IE.getValue(), itLimitCycle2IE.getValue(),
+                                                xStartIE.getValue(), yStartIE.getValue(),
+                                                widthIE.getValue(), heightIE.getValue());
+        final ColorOverRawPixelsMatrixOperator method = m -> realTimeTracking.apply(m);
+        populateData(imageFile, method);
+        configureHandlers();
+        showWindow(imageName);
+      }, new Field[][] { // Three visual rows of input elements
+          {xStartIE, yStartIE},
+          {widthIE, heightIE},
+          {itLimitCycle1IE, itLimitCycle2IE}
+      });
+      floatingPane.setWorkspace(originalWorkspace);
+      floatingPane.show(imageName);
     });
   }
 
-  private void populateData(final ImageFile imageFile) {
+  private void populateData(final ImageFile imageFile,
+                            final ColorOverRawPixelsMatrixOperator method) {
     // Assume not in root for simplicity's sake.
     final String parentPathString = imageFile.getFile().getParentFile().getPath();
     final String imageName = imageFile.getFile().getName();
@@ -173,6 +227,7 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
     // Create an own workspace with this imageFile file (assumed not modified).
     ownWorkspace = newOwnWorkspace(imageFile.getFile());
     // Analyze the current image.
+    LOGGER.debug("About to process image file: {}", imageFile.getFile());
     currImageMatrix = ownWorkspace.applyToImage(method).getImageMatrix();
 
     // Curr frame is assumed to be the first one (i.e, no previous frames is assumed).
@@ -191,6 +246,7 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
         continue;
       }
 
+      LOGGER.debug("About to process image file: {}", file);
       nextImageMatrices.offer(loadImageMatrix(file).apply(method));
     }
 
