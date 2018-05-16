@@ -52,8 +52,9 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
   private static final String WIDTH = "Initial Width";
   private static final String HEIGHT = "Initial Height";
   private static final String IT_LIMIT_CYCLE_1 = "Iteration Limit Cycle 1";
-  private static final String IT_LIMIT_CYCLE_2 = "Iteration Limit Cycle 2";
-  private static final int DEFAULT_IT_LIMIT_CYCLE = 100;
+  private static final String IT_LIMIT_CYCLE_2 = "Gauss Filter Side Size";
+  private static final int DEFAULT_IT_LIMIT_CYCLE_1 = 500;
+  private static final int DEFAULT_IT_LIMIT_CYCLE_2 = 5;
 
   private final Stage stage;
   private final Deque<ImageMatrix> prevImageMatrices;
@@ -174,8 +175,8 @@ public class ActiveContoursMethodUI extends HBox implements Showable {
       yStartIE.setValue((int) rectangle.getMinY());
       widthIE.setValue((int) rectangle.getWidth());
       heightIE.setValue((int) rectangle.getHeight());
-      itLimitCycle1IE.setValue(DEFAULT_IT_LIMIT_CYCLE);
-      itLimitCycle2IE.setValue(DEFAULT_IT_LIMIT_CYCLE);
+      itLimitCycle1IE.setValue(DEFAULT_IT_LIMIT_CYCLE_1);
+      itLimitCycle2IE.setValue(DEFAULT_IT_LIMIT_CYCLE_2);
 
       // Pane to grab parameters, and when applied => active contours method activation.
       final FloatingPane floatingPane = FloatingPane.newInstance(STAGE_TITLE, (workspace, __imageFile__) -> {

@@ -32,6 +32,10 @@ public class SusanMask extends AbstractMask {
     return new SusanMask(BASE_MASK, new SimpleComparator(comparisonThreshold));
   }
 
+  public static SusanMask newSmotherInstance(final double comparisonThreshold) {
+    return new SusanMask(BASE_MASK, new SmotherComparator(comparisonThreshold));
+  }
+
   @Override
   protected void initializeMask() {
     this.mask = BASE_MASK;
@@ -43,10 +47,11 @@ public class SusanMask extends AbstractMask {
 
     iterateMask((maskX, maskY) -> {
       final double maskValue = getMaskPixel(maskX, maskY);
-      // TODO: CONSULTAR esto
       final double imagePixel =
           getClampedValue(pixels, currCoreX + maskX, currCoreY + maskY) * maskValue;
-      n[0] += comparator.applyAsDouble(imagePixel, pixels[currCoreY][currCoreX]);
+      if (imagePixel != 0.0) {
+        n[0] += comparator.applyAsDouble(imagePixel, pixels[currCoreY][currCoreX]);
+      }
     });
 
     return 1 - n[0] / N_MAX;
@@ -66,7 +71,6 @@ public class SusanMask extends AbstractMask {
     }
   }
 
-  // TODO: Probar los resultados usando este metodo de comparacion
   private static class SmotherComparator implements DoubleBinaryOperator {
 
     private final double threshold;

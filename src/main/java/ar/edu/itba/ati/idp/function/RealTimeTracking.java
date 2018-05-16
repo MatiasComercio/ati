@@ -6,7 +6,6 @@ import static ar.edu.itba.ati.idp.function.RealTimeTracking.Type.LOUT;
 import static ar.edu.itba.ati.idp.function.RealTimeTracking.Type.OBJECT;
 import static ar.edu.itba.ati.idp.utils.ArrayUtils.allMatchAround;
 import static ar.edu.itba.ati.idp.utils.ArrayUtils.forEachAround;
-import static java.lang.Math.log;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -30,8 +29,8 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
   private Set<IntVector2D> linPositions;
   private Set<IntVector2D> loutPositions;
 
-  private double[] sumBackgroundColor;
-  private double backgroundSize = 0.0;
+//  private double[] sumBackgroundColor;
+//  private double backgroundSize = 0.0;
   private double[] sumObjectColor;
   private double objectSize = 0.0;
 
@@ -53,6 +52,7 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
     this.gaussMask = GaussMask.newInstance(iterationLimit2ndCycle, GAUSS_MASK_SIGMA);
   }
 
+  @Override
   public double[][][] apply(final double[][][] pixels) {
     // Step 1
     if (phi == null || linPositions == null || loutPositions == null) {
@@ -134,8 +134,8 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
 
     // Remove from LOUT
     loutPositions.remove(position);
-    subtractColors(sumBackgroundColor, pixels, x, y);
-    backgroundSize--;
+//    subtractColors(sumBackgroundColor, pixels, x, y);
+//    backgroundSize--;
 
     // Add to LIN
     phi[y][x] = LIN.doubleValue();
@@ -168,8 +168,8 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
 
     // Add to LOUT
     phi[y][x] = LOUT.doubleValue();
-    addColors(sumBackgroundColor, pixels, x, y);
-    backgroundSize++;
+//    addColors(sumBackgroundColor, pixels, x, y);
+//    backgroundSize++;
     loutPositions.add(position);
 
     // Check background neighbours
@@ -197,6 +197,7 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
     }
   }
 
+  // TODO: Select color
   private double[][][] phiToDoubleMatrix() {
     final double[][][] result = new double[sumObjectColor.length][phi.length][phi[0].length];
 
@@ -216,7 +217,7 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
     this.linPositions = new HashSet<>();
     this.loutPositions = new HashSet<>();
     this.sumObjectColor = new double[firstPixels.length];
-    this.sumBackgroundColor = new double[firstPixels.length];
+//    this.sumBackgroundColor = new double[firstPixels.length];
 
     for (int y = 0; y < firstPixels[0].length; y++) {
       for (int x = 0; x < firstPixels[0][0].length; x++) {
@@ -231,13 +232,13 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
           linPositions.add(IntVector2D.of(x, y));
         } else if (isInitialLOUT(x, y, initialX0, initialY0, initialW, initialH)) {
           phi[y][x] = LOUT.doubleValue();
-          addColors(sumBackgroundColor, firstPixels, x, y);
-          backgroundSize++;
+//          addColors(sumBackgroundColor, firstPixels, x, y);
+//          backgroundSize++;
           loutPositions.add(IntVector2D.of(x, y));
         } else {
           phi[y][x] = BACKGROUND.doubleValue();
-          addColors(sumBackgroundColor, firstPixels, x, y);
-          backgroundSize++;
+//          addColors(sumBackgroundColor, firstPixels, x, y);
+//          backgroundSize++;
         }
       }
     }
@@ -279,25 +280,33 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
         && (x >= initialX0 && x <= initialX0 + initialW));
   }
 
-  // TODO: Test
   private double speed(final double[][][] colors, final int x, final int y) {
+    double norm = 0.0;
+
+    for (int b = 0; b < colors.length; b++) {
+      norm += pow(sumObjectColor[b] / objectSize - colors[b][y][x], 2);
+    }
+
+    return sqrt(norm) / sqrt(256 * 256 * colors.length) < 0.1 ? 1 : -1;
+
 //    double norm = 0.0;
 //
 //    for (int b = 0; b < colors.length; b++) {
 //      norm += pow(colors[b][y][x] - sumObjectColor[b] / objectSize, 2);
 //    }
 //
-//    return sqrt(norm) / (256 * sqrt(sumObjectColor.length)) < 0.2 ? 1.0 : -1.0;
+//    return sqrt(norm) / (256 * sqrt(sumObjectColor.length)) < 0.1 ? 1.0 : -1.0;
 
-    double norm1 = 0.0;
-    double norm2 = 0.0;
+//    double norm1 = 0.0;
+//    double norm2 = 0.0;
+//
+//    for (int b = 0; b < colors.length; b++) {
+//      norm1 += pow(colors[b][y][x] - sumObjectColor[b] / objectSize, 2);
+//      norm2 += pow(colors[b][y][x] - sumBackgroundColor[b] / backgroundSize, 2);
+//    }
+//
+//    return log(sqrt(norm2) / sqrt(norm1));
 
-    for (int b = 0; b < colors.length; b++) {
-      norm1 += pow(colors[b][y][x] - sumObjectColor[b] / objectSize, 2);
-      norm2 += pow(colors[b][y][x] - sumBackgroundColor[b] / backgroundSize, 2);
-    }
-
-    return log(sqrt(norm2) / sqrt(norm1));
 //    return log(
 //        abs((sumBackgroundColor / backgroundSize) - value)
 //            / abs((sumObjectColor / objectSize) - value));

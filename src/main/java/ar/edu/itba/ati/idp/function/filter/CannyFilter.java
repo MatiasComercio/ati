@@ -1,9 +1,12 @@
 package ar.edu.itba.ati.idp.function.filter;
 
-import static java.lang.Math.atan2;
+import static ar.edu.itba.ati.idp.utils.ArrayUtils.newWithSizeOf;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 
 import ar.edu.itba.ati.idp.function.NonMaximalSuppression;
+import ar.edu.itba.ati.idp.function.Normalizer;
 import ar.edu.itba.ati.idp.function.UniquePixelsBandOperator;
 import ar.edu.itba.ati.idp.function.filter.mask.Mask;
 import ar.edu.itba.ati.idp.function.filter.mask.RotatableMask;
@@ -12,65 +15,69 @@ import ar.edu.itba.ati.idp.function.filter.mask.linear.SobelMask;
 import ar.edu.itba.ati.idp.function.threshold.HysteresisThreshold;
 import ar.edu.itba.ati.idp.model.ImageMatrix;
 import ar.edu.itba.ati.idp.utils.MatrixRotator.Degree;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class CannyFilter implements UniquePixelsBandOperator {
 
   private static final double MAX_VALUE = ImageMatrix.getMaxNormalizedPixelValue();
 
-  private final List<Filter<GaussMask>> gaussFilters;
+  private final double[] sigmas;
   private final Mask maskDX;
   private final Mask maskDY;
 
-  private CannyFilter(final List<Filter<GaussMask>> gaussFilters, final RotatableMask<SobelMask> mask) {
-    this.gaussFilters = gaussFilters;
-    this.maskDX = mask; // TODO: We should validate this. What if SobelMask orientation changes?
-    this.maskDY = mask.rotate(Degree.D90);
+  private <T extends RotatableMask<T>> CannyFilter(final double[] sigmas,
+                                                   final RotatableMask<T> maskDX,
+                                                   final RotatableMask<T> maskDY) {
+    this.sigmas = sigmas;
+    this.maskDX = maskDX;
+    this.maskDY = maskDY;
   }
 
   public static CannyFilter newInstance(final double[] sigmas) {
-    final List<Filter<GaussMask>> gaussFilters = new ArrayList<>(sigmas.length);
-
-    for (final double sigma : sigmas) {
-      gaussFilters.add(Filter.newInstance(GaussMask.newInstance(sigma)));
-    }
-
-    return new CannyFilter(gaussFilters, SobelMask.newInstance());
+    /*
+     * IMPORTANT!
+     * We need to detect borders going UP for y,
+     * and borders going RIGHT for x
+     * to be consistent with directions through all the Canny's algorithm.
+     */
+    // TODO: We should validate this. What if SobelMask orientation changes?
+    final RotatableMask<SobelMask> maskDX = SobelMask.newInstance();
+    return new CannyFilter(sigmas, maskDX, maskDX.rotate(Degree.D270));
   }
 
   @Override
   public double[][] apply(final double[][] pixels) {
-    final double[][][] images = new double[gaussFilters.size()][][];
-    int i = 0;
+    /*
+     * Apply Canny Algorithm for each gaussian filter corresponding to each given sigma,
+     * and then merge them with an `and` policy.
+     */
+    return and(Arrays.stream(sigmas)
+                   .mapToObj(sigma -> applyCanny(pixels, sigma))
+                   .toArray(double[][][]::new)
+    );
+  }
 
-    for (final Filter<GaussMask> gaussFilter : gaussFilters) {
-      final double[][] pixelsFiltered = gaussFilter.apply(pixels);
-      final double[][] borderMagnitudes = new double[pixelsFiltered.length][];
-      final double[][] borderDirections = new double[pixelsFiltered.length][];
+  private double[][] applyCanny(final double[][] pixels, final double sigma) {
+    final double[][] filteredPixels = Filter.newInstance(GaussMask.newInstance(sigma)).apply(pixels);
+    final double[][] borderMagnitudes = newWithSizeOf(filteredPixels);
+    final double[][] borderDirections = newWithSizeOf(filteredPixels);
 
-      for (int y = 0; y < pixelsFiltered.length; y++) {
-        borderMagnitudes[y] = new double[pixelsFiltered[y].length];
-        borderDirections[y] = new double[pixelsFiltered[y].length];
-
-        for (int x = 0; x < pixelsFiltered[y].length; x++) {
-          final double dx = maskDX.apply(pixelsFiltered, x, y);
-          final double dy = maskDY.apply(pixelsFiltered, x, y);
-          borderMagnitudes[y][x] = Math.sqrt(dx * dx + dy * dy);
-          // TODO: Test degree calc
-          borderDirections[y][x] = dx != 0 ? (toDegrees(atan2(dy, dx)) + 360) % 360 : 0.0;
-        }
+    for (int y = 0; y < filteredPixels.length; y++) {
+      for (int x = 0; x < filteredPixels[y].length; x++) {
+        final double dx = maskDX.apply(filteredPixels, x, y);
+        final double dy = maskDY.apply(filteredPixels, x, y);
+        borderMagnitudes[y][x] = sqrt(pow(dx, 2) + pow(dy, 2));
+        borderDirections[y][x] = dx == 0 ? 270 : (toDegrees(Math.atan(dy/dx)) + 360) % 360;
       }
-
-      // TODO: Hacer q NonMaximalSuppression modifique la matriz?
-      final double[][] suppressedBorderMagnitudes = NonMaximalSuppression
-          .apply(borderMagnitudes, borderDirections);
-
-      images[i++] = HysteresisThreshold.INSTANCE.apply(suppressedBorderMagnitudes);
     }
 
-    return and(images);
+    final double[][] suppressedBorderMagnitudes =
+        NonMaximalSuppression.apply(Normalizer.INSTANCE.apply(borderMagnitudes), borderDirections);
+
+    return HysteresisThreshold.INSTANCE.apply(suppressedBorderMagnitudes);
   }
+
+
 
   // TODO: Esto puede ir en ArrayUtils [recibiendo falseValue (0.0), trueValue (255.0)]
   // TODO: Esta funcion de union deberia ser un parametro no?

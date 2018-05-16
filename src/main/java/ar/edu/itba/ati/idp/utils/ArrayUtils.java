@@ -168,12 +168,13 @@ public abstract class ArrayUtils {
   }
 
   public static boolean anyMatchAround(final double[][] m, final int x, final int y,
-      final DoublePredicate predicate, final EnumSet<DegreeDirection> directions) {
+                                       final EnumSet<DegreeDirection> directions,
+                                       final DoublePredicate matcher) {
     for (final DegreeDirection direction : directions) {
       final OptionalDouble[] valuesInDirection = direction.getValuesInDirection(m, x, y);
 
       for (final OptionalDouble valueInDirection : valuesInDirection) {
-        if (valueInDirection.isPresent() && predicate.test(valueInDirection.getAsDouble())) {
+        if (valueInDirection.isPresent() && matcher.test(valueInDirection.getAsDouble())) {
           return true;
         }
       }

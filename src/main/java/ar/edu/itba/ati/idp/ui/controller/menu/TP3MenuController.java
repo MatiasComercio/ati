@@ -1,7 +1,7 @@
 package ar.edu.itba.ati.idp.ui.controller.menu;
 
 import ar.edu.itba.ati.idp.function.filter.CannyFilter;
-import ar.edu.itba.ati.idp.function.filter.SusanFilter;
+import ar.edu.itba.ati.idp.function.filter.SusanMethod;
 import ar.edu.itba.ati.idp.function.objectdetector.CircleHoughMethod;
 import ar.edu.itba.ati.idp.function.objectdetector.RectHoughMethod;
 import ar.edu.itba.ati.idp.ui.component.Showable;
@@ -32,7 +32,7 @@ public class TP3MenuController extends Menu {
       workspace.applyToImage(CannyFilter.newInstance(sigmas));
     });
     susanBorderAndCornerDetectorUI = SusanBorderAndCornerDetectorUI.newInstance((workspace, imageFile, threshold) -> {
-      workspace.applyToImage(SusanFilter.newInstance(threshold));
+      workspace.applyToImage(SusanMethod.newInstance(threshold));
     });
     houghMethodForRectsUI = HoughMethodForRectsUI.newInstance((workspace, imageFile,
                                                                rhoStart, rhoStep, rhoEnd,
