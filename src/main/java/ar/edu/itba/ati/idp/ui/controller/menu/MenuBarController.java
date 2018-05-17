@@ -27,6 +27,8 @@ public class MenuBarController extends MenuBar {
   @FXML
   private TP3MenuController tp3Menu;
 
+  @FXML
+  private TP4MenuController tp4Menu;
 
   public MenuBarController() {
     ResourceLoader.INSTANCE.loadCustomFxml(LAYOUT_PATH, this);
@@ -37,5 +39,6 @@ public class MenuBarController extends MenuBar {
     editMenu.setWorkspace(workspace);
     tp2Menu.setWorkspace(workspace);
     tp3Menu.setWorkspace(workspace);
+    tp4Menu.setWorkspace(workspace);
   }
 }

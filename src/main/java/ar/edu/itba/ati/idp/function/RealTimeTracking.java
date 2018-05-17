@@ -49,7 +49,7 @@ public class RealTimeTracking implements ColorOverRawPixelsMatrixOperator {
     this.initialY0 = initialY0;
     this.initialW = initialW;
     this.initialH = initialH;
-    this.gaussMask = GaussMask.newInstance(iterationLimit2ndCycle, GAUSS_MASK_SIGMA);
+    this.gaussMask = GaussMask.newInstance(GAUSS_MASK_SIGMA, iterationLimit2ndCycle);
   }
 
   @Override

@@ -19,7 +19,7 @@ public final class GaussMask extends AbstractLinearMask {
     return new GaussMask(sideLength, sigma);
   }
 
-  public static GaussMask newInstance(final int sideLength, final double sigma) {
+  public static GaussMask newInstance(final double sigma, final int sideLength) {
     if (sigma <= 0) {
       throw new IllegalArgumentException("sigma should be positive");
     }

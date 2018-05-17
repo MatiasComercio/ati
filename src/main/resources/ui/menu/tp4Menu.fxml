@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.TP4MenuController?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.TP4MenuController"
+  xmlns:fx="http://javafx.com/fxml" mnemonicParsing="false" text="TP4">
+  <MenuItem onAction="#handleHarrisDetector" mnemonicParsing="false" text="Harris Detector..."/>
+
+  <SeparatorMenuItem mnemonicParsing="false"/>
+
+</fx:root>
