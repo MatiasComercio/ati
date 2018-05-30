@@ -50,4 +50,8 @@ public class OpenFileChooser {
   public List<File> chooseToLoadManually(final Workspace workspace) {
     return fileChooser.showOpenMultipleDialog(workspace.getStage());
   }
+
+  public File chooseToLoadOneManually(final Workspace workspace) {
+    return fileChooser.showOpenDialog(workspace.getStage());
+  }
 }

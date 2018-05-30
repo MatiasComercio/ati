@@ -9,4 +9,5 @@
 
   <SeparatorMenuItem mnemonicParsing="false"/>
 
+  <MenuItem onAction="#handleSiftDetector" mnemonicParsing="false" text="Sift Detector..."/>
 </fx:root>
