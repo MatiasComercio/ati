@@ -6,6 +6,7 @@
 <?import ar.edu.itba.ati.idp.ui.controller.menu.TP2MenuController?>
 <?import ar.edu.itba.ati.idp.ui.controller.menu.TP3MenuController?>
 <?import ar.edu.itba.ati.idp.ui.controller.menu.TP4MenuController?>
+<?import ar.edu.itba.ati.idp.ui.controller.menu.TPFinalMenuController?>
 <fx:root type="ar.edu.itba.ati.idp.ui.controller.menu.MenuBarController"
   xmlns:fx="http://javafx.com/fxml">
   <FileMenuController fx:id="fileMenu"/>
@@ -13,5 +14,5 @@
   <TP2MenuController fx:id="tp2Menu"/>
   <TP3MenuController fx:id="tp3Menu"/>
   <TP4MenuController fx:id="tp4Menu"/>
+  <TPFinalMenuController fx:id="tpFinalMenu"/>
 </fx:root>
-

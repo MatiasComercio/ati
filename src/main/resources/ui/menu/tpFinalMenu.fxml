@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ar.edu.itba.ati.idp.ui.controller.menu.TPFinalMenuController?>
+<?import javafx.scene.control.MenuItem?>
+<fx:root type="TPFinalMenuController"
+  xmlns:fx="http://javafx.com/fxml"
+  mnemonicParsing="false"
+  text="Final">
+  <MenuItem
+    onAction="#handleGridSiftDetector"
+    mnemonicParsing="false"
+    text="Grid-Sift Detector..."/>
+</fx:root>

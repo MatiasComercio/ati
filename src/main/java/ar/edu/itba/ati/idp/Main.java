@@ -6,6 +6,9 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
   public static void main(String[] args) {
+    // Initialize OpenCV Library
+    nu.pattern.OpenCV.loadLocally();
+    // Launch javafx application
     launch(args);
   }
 
